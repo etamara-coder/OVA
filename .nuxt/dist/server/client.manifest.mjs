@@ -1,1 +1,4 @@
-export default ({"@vite/client":{prefetch:!0,isEntry:!0,file:"@vite/client",css:[],module:!0,resourceType:"script",dynamicImports:void 0},"C:/Users/Erik/Documents/Universidad/FUNDAMENTOS DE PROGRAMACION/OVA/node_modules/nuxt/dist/app/entry.async.js":{resourceType:"script",module:!0,prefetch:!0,preload:!0,isEntry:!0,file:"C:/Users/Erik/Documents/Universidad/FUNDAMENTOS DE PROGRAMACION/OVA/node_modules/nuxt/dist/app/entry.async.js",dynamicImports:void 0}})
+
+import { viteNodeFetch } from "file:///C:/Users/Erik/Documents/Universidad/FUNDAMENTOS%20DE%20PROGRAMACION/semaforo/node_modules/@nuxt/vite-builder/dist/vite-node.mjs"
+export default () => viteNodeFetch.getManifest()
+    
