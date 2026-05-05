@@ -2,7 +2,10 @@ import { defineNuxtConfig } from 'nuxt/config'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
-  ssr: false,   // 👈 agrega esta línea
+  ssr: false,
+  nitro: {
+    preset: 'static'
+  },
   build: {
     transpile: ['vuetify'],
   },
