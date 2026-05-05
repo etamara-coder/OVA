@@ -2,12 +2,13 @@
   "name": "practica",
   "type": "module",
   "private": true,
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview"
-  },
+"scripts": {
+  "prebuild": "chmod +x node_modules/.bin/nuxt || true",
+  "build": "nuxt build",
+  "dev": "nuxt dev",
+  "generate": "nuxt generate",
+  "preview": "nuxt preview"
+},
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.11.3",
