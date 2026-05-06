@@ -1,12 +1,9 @@
 <template>
   <v-container fluid class="bienvenida pa-0">
 
-    <!-- Tarjetas flotantes -->
     <div v-for="f in figuras" :key="f.clase" :class="['figura', f.clase]">
       <v-card
-        rounded="xl"
-        width="160"
-        height="160"
+        rounded="xl" width="160" height="160"
         class="d-flex flex-column align-center justify-center ga-3 pa-3"
         elevation="0"
         :style="{ background: f.bg, border: '1px solid ' + f.borde }"
@@ -18,11 +15,9 @@
       </v-card>
     </div>
 
-    <!-- Contenido central -->
     <v-row justify="center" align="center" class="fill-height ma-0" style="min-height:100vh">
       <v-col cols="12" sm="8" md="5" class="d-flex flex-column align-center text-center ga-4">
 
-        <!-- Logo giratorio -->
         <div class="logo-wrapper">
           <svg width="88" height="88" viewBox="0 0 80 80">
             <polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="#60A5FA" />
@@ -31,28 +26,36 @@
           </svg>
         </div>
 
-        <!-- Etiqueta -->
         <span class="text-overline etiqueta" style="letter-spacing:4px !important;">
           OVA · MATEMÁTICAS
         </span>
 
-        <!-- Título -->
         <h1 class="titulo">GeoÁrea</h1>
 
-        <!-- Subtítulo -->
         <p class="text-body-1 subtitulo">
           Domina el cálculo del área<br>de las figuras geométricas
         </p>
 
-        <!-- Badges -->
         <div class="d-flex ga-2 flex-wrap justify-center">
           <v-chip color="blue-lighten-2" variant="tonal" size="small">Grados 6° – 8°</v-chip>
           <v-chip color="green-lighten-2" variant="tonal" size="small">Secundaria básica</v-chip>
         </div>
 
-        <!-- Botón -->
+        <!-- Campo de nombre -->
+        <div class="nombre-box">
+          <label class="nombre-label">¿Cómo te llamas?</label>
+          <input
+            v-model="usuario.nombre"
+            type="text"
+            class="nombre-input"
+            placeholder="Escribe tu nombre..."
+            maxlength="40"
+          />
+        </div>
+
         <v-btn
-          to="/dashboard"
+          :to="usuario.nombre.trim() ? '/dashboard' : undefined"
+          :disabled="!usuario.nombre.trim()"
           color="blue"
           size="large"
           rounded="lg"
@@ -62,7 +65,6 @@
           ¡Comenzar!
         </v-btn>
 
-        <!-- Footer -->
         <span class="text-caption footer-txt">
           Universidad de Córdoba · Programa de Informática · 2026
         </span>
@@ -75,6 +77,9 @@
 
 <script setup>
 import { defineComponent, h } from 'vue'
+import { useUsuarioStore } from '~/stores/usuario'
+
+const usuario = useUsuarioStore()
 
 const mkSvg = (nodos, w = 60, ht = 60) =>
   defineComponent({ render: () => h('svg', { width: w, height: ht, viewBox: `0 0 ${w} ${ht}` }, nodos) })
@@ -114,7 +119,6 @@ const figuras = [
 </script>
 
 <style scoped>
-/* Fondo oscuro */
 .bienvenida {
   position: relative;
   min-height: 100vh;
@@ -122,7 +126,6 @@ const figuras = [
   overflow: hidden;
 }
 
-/* Efecto de luz difusa en el centro */
 .bienvenida::before {
   content: '';
   position: absolute;
@@ -133,7 +136,6 @@ const figuras = [
   pointer-events: none;
 }
 
-/* Tarjetas flotantes */
 .figura { position: absolute; }
 .figura--tl { top: 36px;  left: 36px;  animation: flotar-a 3.5s ease-in-out infinite; }
 .figura--tr { top: 36px;  right: 36px; animation: flotar-b 4.0s ease-in-out infinite 0.8s; }
@@ -142,10 +144,8 @@ const figuras = [
 .figura--bl { bottom: 36px; left: 36px;  animation: flotar-c 3.8s ease-in-out infinite 1.3s; }
 .figura--br { bottom: 36px; right: 36px; animation: flotar-b 4.2s ease-in-out infinite 0.4s; }
 
-/* Logo */
 .logo-wrapper { animation: girar 14s linear infinite; }
 
-/* Tipografía */
 .etiqueta { color: #4B6CB7 !important; }
 .titulo {
   font-size: 56px;
@@ -158,13 +158,46 @@ const figuras = [
 .subtitulo { color: #6B84A8 !important; }
 .footer-txt { color: #2D4066 !important; }
 
-/* Animaciones */
+/* Campo nombre */
+.nombre-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  align-items: center;
+}
+
+.nombre-label {
+  font-size: 13px;
+  color: #4a6fa5;
+  text-align: left;
+}
+
+.nombre-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #e8f0fe;
+  outline: none;
+  transition: border 0.2s;
+  width: 100%;
+}
+
+.nombre-input::placeholder { color: #2d4a6e; }
+
+.nombre-input:focus {
+  border-color: rgba(56, 138, 221, 0.6);
+  background: rgba(56, 138, 221, 0.06);
+}
+
 @keyframes flotar-a { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
 @keyframes flotar-b { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)}  }
 @keyframes flotar-c { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
 @keyframes girar    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
-/* Responsivo */
 @media (max-width: 768px) {
   .figura--ml, .figura--mr { display: none; }
   .figura--tl { top: 16px; left: 16px; }
