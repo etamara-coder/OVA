@@ -71,8 +71,7 @@
                     <component :is="figura.svg" />
                     <span :style="{ color: figura.color, fontWeight: 600 }">{{ figura.nombre }}</span>
                   </div>
-                  <div v-for="figura in dragFigurasUnidas" :key="'u'+figura.id"
-                    class="drag-item drag-item--unida">
+                  <div v-for="figura in dragFigurasUnidas" :key="'u'+figura.id" class="drag-item drag-item--unida">
                     <span style="font-size:22px;color:#16a34a">✓</span>
                     <span style="color:#16a34a;font-weight:600">{{ figura.nombre }}</span>
                   </div>
@@ -152,8 +151,8 @@
                 <button v-if="quizRespondida" class="calc-btn" @click="siguientePregunta">{{ quizIndice < quizPreguntas.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
               </div>
               <div v-else class="quiz-resultado">
-                <p class="quiz-resultado-emoji">{{ quizPuntaje >= 3 ? '🎉' : '📚' }}</p>
-                <h3>{{ quizPuntaje >= 3 ? '¡Excelente!' : 'Sigue practicando' }}</h3>
+                <p class="quiz-resultado-emoji">{{ quizPuntaje >= 5 ? '🎉' : '📚' }}</p>
+                <h3>{{ quizPuntaje >= 5 ? '¡Excelente!' : 'Sigue practicando' }}</h3>
                 <p>Obtuviste <strong>{{ quizPuntaje }}</strong> de <strong>{{ quizPreguntas.length }}</strong> correctas.</p>
                 <button class="calc-btn" @click="reiniciarQuiz">Intentar de nuevo</button>
               </div>
@@ -179,8 +178,8 @@
                 <button v-if="adivinaRespondida" class="calc-btn" style="margin-top:12px" @click="siguienteAdivina">{{ adivinaIndice < adivinaPreguntas.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
               </div>
               <div v-else class="quiz-resultado">
-                <p class="quiz-resultado-emoji">{{ adivinaPuntaje >= 3 ? '🎉' : '📚' }}</p>
-                <h3>{{ adivinaPuntaje >= 3 ? '¡Buen ojo!' : 'Sigue intentando' }}</h3>
+                <p class="quiz-resultado-emoji">{{ adivinaPuntaje >= 4 ? '🎉' : '📚' }}</p>
+                <h3>{{ adivinaPuntaje >= 4 ? '¡Buen ojo!' : 'Sigue intentando' }}</h3>
                 <p>Adivinaste <strong>{{ adivinaPuntaje }}</strong> de <strong>{{ adivinaPreguntas.length }}</strong>.</p>
                 <button class="calc-btn" @click="reiniciarAdivina">Intentar de nuevo</button>
               </div>
@@ -251,14 +250,13 @@
 definePageMeta({ layout: 'dashboard' })
 import { ref, computed, defineComponent, h, onUnmounted } from 'vue'
 
-// ── Lista de actividades ─────────────────────────────────
 const actividades = [
-  { id: 'arrastra',     emoji: '🖱️', tipo: 'Arrastrar',  dificultad: '⭐ Básico',        nombre: 'Une Figura y Fórmula',        desc: 'Arrastra cada figura geométrica hacia su fórmula de área correcta.',              color: '#3B82F6', bgLight: 'rgba(59,130,246,0.1)' },
-  { id: 'calculadora',  emoji: '🧮', tipo: 'Herramienta', dificultad: '⭐ Básico',        nombre: 'Calculadora de Área',         desc: 'Selecciona una figura, ingresa sus medidas y calcula su área paso a paso.',       color: '#8B5CF6', bgLight: 'rgba(139,92,246,0.1)' },
-  { id: 'quiz',         emoji: '❓', tipo: 'Quiz',        dificultad: '⭐⭐ Intermedio',   nombre: 'Quiz de Fórmulas',            desc: 'Responde preguntas de selección múltiple con cronómetro de 20 segundos.',        color: '#F97316', bgLight: 'rgba(249,115,22,0.1)' },
-  { id: 'adivina',      emoji: '🔍', tipo: 'Desafío',     dificultad: '⭐⭐ Intermedio',   nombre: 'Adivina la Figura',           desc: 'Te damos el área y los datos. ¿Puedes identificar a qué figura pertenecen?',    color: '#EC4899', bgLight: 'rgba(236,72,153,0.1)' },
-  { id: 'carrera',      emoji: '⏱️', tipo: 'Juego',       dificultad: '⭐⭐⭐ Avanzado',  nombre: 'Carrera contra el Tiempo',    desc: 'Responde la mayor cantidad de ejercicios correctos en 60 segundos.',             color: '#EF4444', bgLight: 'rgba(239,68,68,0.1)' },
-  { id: 'ruleta',       emoji: '🎯', tipo: 'Juego',       dificultad: '⭐⭐ Intermedio',   nombre: 'Ruleta de Figuras',           desc: 'Gira la ruleta, te asigna una figura aleatoria y debes calcular su área.',       color: '#16a34a', bgLight: 'rgba(34,197,94,0.1)' },
+  { id: 'arrastra',    emoji: '🖱️', tipo: 'Arrastrar',  dificultad: '⭐ Básico',       nombre: 'Une Figura y Fórmula',     desc: 'Arrastra cada figura geométrica hacia su fórmula de área correcta.',            color: '#3B82F6', bgLight: 'rgba(59,130,246,0.1)'  },
+  { id: 'calculadora', emoji: '🧮', tipo: 'Herramienta', dificultad: '⭐ Básico',       nombre: 'Calculadora de Área',      desc: 'Selecciona una figura, ingresa sus medidas y calcula su área paso a paso.',     color: '#8B5CF6', bgLight: 'rgba(139,92,246,0.1)' },
+  { id: 'quiz',        emoji: '❓', tipo: 'Quiz',        dificultad: '⭐⭐ Intermedio',  nombre: 'Quiz de Fórmulas',         desc: 'Responde preguntas de selección múltiple con cronómetro de 20 segundos.',      color: '#F97316', bgLight: 'rgba(249,115,22,0.1)'  },
+  { id: 'adivina',     emoji: '🔍', tipo: 'Desafío',     dificultad: '⭐⭐ Intermedio',  nombre: 'Adivina la Figura',        desc: 'Te damos el área y los datos. ¿Puedes identificar a qué figura pertenecen?',  color: '#EC4899', bgLight: 'rgba(236,72,153,0.1)' },
+  { id: 'carrera',     emoji: '⏱️', tipo: 'Juego',       dificultad: '⭐⭐⭐ Avanzado', nombre: 'Carrera contra el Tiempo', desc: 'Responde la mayor cantidad de ejercicios correctos en 60 segundos.',           color: '#EF4444', bgLight: 'rgba(239,68,68,0.1)'   },
+  { id: 'ruleta',      emoji: '🎯', tipo: 'Juego',       dificultad: '⭐⭐ Intermedio',  nombre: 'Ruleta de Figuras',        desc: 'Gira la ruleta, te asigna una figura aleatoria y debes calcular su área.',     color: '#16a34a', bgLight: 'rgba(34,197,94,0.1)'   },
 ]
 
 const modalAbierto = ref(false)
@@ -283,18 +281,30 @@ const mkSvg = (nodos) =>
   defineComponent({ render: () => h('svg', { width: 48, height: 48, viewBox: '0 0 80 80' }, nodos) })
 
 const pares = [
-  { id: 'cuadrado',   nombre: 'Cuadrado',   color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  formula: 'A = l²',              svg: mkSvg([h('rect', { x:10, y:10, width:60, height:60, rx:4, fill:'rgba(59,130,246,0.2)', stroke:'#3B82F6','stroke-width':2 })]),
-    pasos: ['El cuadrado tiene todos sus lados iguales de longitud l.','Para calcular su área, multiplica el lado por sí mismo.','A = l × l = l²','Ejemplo: l = 4 cm → A = 4² = 16 cm²'] },
-  { id: 'rectangulo', nombre: 'Rectángulo', color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', formula: 'A = b × h',           svg: mkSvg([h('rect', { x:6, y:20, width:68, height:40, rx:4, fill:'rgba(139,92,246,0.2)', stroke:'#8B5CF6','stroke-width':2 })]),
-    pasos: ['El rectángulo tiene una base (b) y una altura (h).','Multiplica la base por la altura.','A = b × h','Ejemplo: b=8, h=3 → A = 24 cm²'] },
-  { id: 'triangulo',  nombre: 'Triángulo',  color: '#16a34a', bg: 'rgba(34,197,94,0.08)',  formula: 'A = (b × h) / 2',    svg: mkSvg([h('polygon', { points:'40,8 74,72 6,72', fill:'rgba(34,197,94,0.2)', stroke:'#22C55E','stroke-width':2 })]),
-    pasos: ['El triángulo tiene base (b) y altura (h) perpendicular.','Su área es la mitad del rectángulo que lo contiene.','A = (b × h) / 2','Ejemplo: b=10, h=6 → A = 30 cm²'] },
-  { id: 'circulo',    nombre: 'Círculo',    color: '#F97316', bg: 'rgba(251,146,60,0.08)', formula: 'A = π × r²',          svg: mkSvg([h('circle',{cx:40,cy:40,r:32,fill:'rgba(251,146,60,0.2)',stroke:'#F97316','stroke-width':2}),h('circle',{cx:40,cy:40,r:2.5,fill:'#F97316'})]),
-    pasos: ['El círculo tiene radio (r) del centro al borde.','π ≈ 3.1416','A = π × r²','Ejemplo: r=5 → A ≈ 78.54 cm²'] },
-  { id: 'trapecio',   nombre: 'Trapecio',   color: '#EC4899', bg: 'rgba(236,72,153,0.08)', formula: 'A = (B + b) × h / 2', svg: mkSvg([h('polygon',{points:'20,16 60,16 74,64 6,64',fill:'rgba(236,72,153,0.2)',stroke:'#EC4899','stroke-width':2})]),
-    pasos: ['El trapecio tiene bases B (mayor) y b (menor), y altura h.','Suma las dos bases: B + b.','Multiplica por h y divide entre 2.','Ejemplo: B=10, b=6, h=4 → A = 32 cm²'] },
-  { id: 'rombo',      nombre: 'Rombo',      color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  formula: 'A = (d₁ × d₂) / 2',  svg: mkSvg([h('polygon',{points:'40,6 74,40 40,74 6,40',fill:'rgba(239,68,68,0.2)',stroke:'#EF4444','stroke-width':2}),h('line',{x1:6,y1:40,x2:74,y2:40,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3}),h('line',{x1:40,y1:6,x2:40,y2:74,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3})]),
-    pasos: ['El rombo tiene diagonales d₁ (mayor) y d₂ (menor).','Multiplica las diagonales.','Divide entre 2.','Ejemplo: d₁=12, d₂=8 → A = 48 cm²'] },
+  { id: 'cuadrado',    nombre: 'Cuadrado',          color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  formula: 'A = l²',
+    svg: mkSvg([h('rect',{x:10,y:10,width:60,height:60,rx:4,fill:'rgba(59,130,246,0.2)',stroke:'#3B82F6','stroke-width':2})]),
+    pasos: ['El cuadrado tiene todos sus lados iguales de longitud l.','Multiplica el lado por sí mismo.','A = l × l = l²','Ejemplo: l=4 → A=16 cm²'] },
+  { id: 'rectangulo',  nombre: 'Rectángulo',         color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', formula: 'A = b × h',
+    svg: mkSvg([h('rect',{x:6,y:20,width:68,height:40,rx:4,fill:'rgba(139,92,246,0.2)',stroke:'#8B5CF6','stroke-width':2})]),
+    pasos: ['Tiene base (b) y altura (h).','Multiplica base por altura.','A = b × h','Ejemplo: b=8, h=3 → A=24 cm²'] },
+  { id: 'triangulo',   nombre: 'Triángulo',          color: '#16a34a', bg: 'rgba(34,197,94,0.08)',  formula: 'A = (b × h) / 2',
+    svg: mkSvg([h('polygon',{points:'40,8 74,72 6,72',fill:'rgba(34,197,94,0.2)',stroke:'#22C55E','stroke-width':2})]),
+    pasos: ['Tiene base (b) y altura (h) perpendicular.','Es la mitad de un rectángulo.','A = (b × h) / 2','Ejemplo: b=10, h=6 → A=30 cm²'] },
+  { id: 'circulo',     nombre: 'Círculo',            color: '#F97316', bg: 'rgba(251,146,60,0.08)', formula: 'A = π × r²',
+    svg: mkSvg([h('circle',{cx:40,cy:40,r:32,fill:'rgba(251,146,60,0.2)',stroke:'#F97316','stroke-width':2}),h('circle',{cx:40,cy:40,r:2.5,fill:'#F97316'})]),
+    pasos: ['Tiene radio (r) del centro al borde.','π ≈ 3.1416','A = π × r²','Ejemplo: r=5 → A≈78.54 cm²'] },
+  { id: 'trapecio',    nombre: 'Trapecio',           color: '#EC4899', bg: 'rgba(236,72,153,0.08)', formula: 'A = (B + b) × h / 2',
+    svg: mkSvg([h('polygon',{points:'20,16 60,16 74,64 6,64',fill:'rgba(236,72,153,0.2)',stroke:'#EC4899','stroke-width':2})]),
+    pasos: ['Bases B (mayor) y b (menor), altura h.','Suma las bases: B + b.','Multiplica por h y divide entre 2.','Ejemplo: B=10,b=6,h=4 → A=32 cm²'] },
+  { id: 'rombo',       nombre: 'Rombo',              color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  formula: 'A = (d₁ × d₂) / 2',
+    svg: mkSvg([h('polygon',{points:'40,6 74,40 40,74 6,40',fill:'rgba(239,68,68,0.2)',stroke:'#EF4444','stroke-width':2}),h('line',{x1:6,y1:40,x2:74,y2:40,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3}),h('line',{x1:40,y1:6,x2:40,y2:74,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3})]),
+    pasos: ['Diagonales d₁ (mayor) y d₂ (menor).','Multiplica las diagonales.','Divide entre 2.','Ejemplo: d₁=12,d₂=8 → A=48 cm²'] },
+  { id: 'paralelogramo', nombre: 'Paralelogramo',   color: '#0891b2', bg: 'rgba(8,145,178,0.08)',  formula: 'A = b × h',
+    svg: mkSvg([h('polygon',{points:'18,64 26,16 62,16 54,64',fill:'rgba(8,145,178,0.2)',stroke:'#0891b2','stroke-width':2})]),
+    pasos: ['Tiene base (b) y altura perpendicular (h).','La altura NO es el lado inclinado.','A = b × h','Ejemplo: b=9,h=5 → A=45 cm²'] },
+  { id: 'pentagono',   nombre: 'Pentágono Regular',  color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', formula: 'A = (P × a) / 2',
+    svg: mkSvg([h('polygon',{points:'40,5 75,28 62,68 18,68 5,28',fill:'rgba(124,58,237,0.2)',stroke:'#7c3aed','stroke-width':2}),h('line',{x1:40,y1:40,x2:40,y2:68,stroke:'#7c3aed','stroke-width':1,'stroke-dasharray':3})]),
+    pasos: ['P = perímetro (5 × lado), a = apotema.','La apotema va del centro al punto medio de un lado.','A = (P × a) / 2','Ejemplo: l=6,a=4.13 → A≈62 cm²'] },
 ]
 
 const dragArrastrado = ref(null)
@@ -308,11 +318,8 @@ const dragFormulas = ref([])
 const dragFigurasRestantes = computed(() => pares.filter(p => !dragFigurasUnidas.value.find(u => u.id === p.id)))
 
 const reiniciarDrag = () => {
-  dragCorrectas.value = 0
-  dragIntentos.value = 0
-  dragCompletado.value = false
-  dragSolucionFigura.value = null
-  dragFigurasUnidas.value = []
+  dragCorrectas.value = 0; dragIntentos.value = 0
+  dragCompletado.value = false; dragSolucionFigura.value = null; dragFigurasUnidas.value = []
   dragFormulas.value = [...pares].sort(() => Math.random() - 0.5).map(p => ({ id: p.id, texto: p.formula, estado: null, hover: false }))
 }
 
@@ -323,8 +330,7 @@ const onDrop = (formula) => {
   if (!dragArrastrado.value || formula.estado === 'correcto') return
   dragIntentos.value++
   if (dragArrastrado.value.id === formula.id) {
-    formula.estado = 'correcto'
-    dragCorrectas.value++
+    formula.estado = 'correcto'; dragCorrectas.value++
     dragFigurasUnidas.value.push(dragArrastrado.value)
     if (dragFigurasUnidas.value.length === pares.length) dragCompletado.value = true
   } else {
@@ -337,12 +343,14 @@ const onDrop = (formula) => {
 
 // ── Calculadora ──────────────────────────────────────────
 const calculadoraFiguras = [
-  { nombre: 'Cuadrado',   campos: [{ key:'l',  label:'Lado (l)' }],                                                                           formula: v => +(v.l**2).toFixed(2) },
-  { nombre: 'Rectángulo', campos: [{ key:'b',  label:'Base (b)' }, { key:'h', label:'Altura (h)' }],                                          formula: v => +(v.b*v.h).toFixed(2) },
-  { nombre: 'Triángulo',  campos: [{ key:'b',  label:'Base (b)' }, { key:'h', label:'Altura (h)' }],                                          formula: v => +((v.b*v.h)/2).toFixed(2) },
-  { nombre: 'Círculo',    campos: [{ key:'r',  label:'Radio (r)' }],                                                                          formula: v => +(Math.PI*v.r**2).toFixed(2) },
-  { nombre: 'Trapecio',   campos: [{ key:'B',  label:'Base mayor (B)' }, { key:'b', label:'Base menor (b)' }, { key:'h', label:'Altura (h)' }],formula: v => +((v.B+v.b)*v.h/2).toFixed(2) },
-  { nombre: 'Rombo',      campos: [{ key:'d1', label:'Diagonal mayor (d₁)' }, { key:'d2', label:'Diagonal menor (d₂)' }],                     formula: v => +((v.d1*v.d2)/2).toFixed(2) },
+  { nombre: 'Cuadrado',          campos: [{ key:'l',  label:'Lado (l)' }],                                                                            formula: v => +(v.l**2).toFixed(2) },
+  { nombre: 'Rectángulo',        campos: [{ key:'b',  label:'Base (b)' },{ key:'h', label:'Altura (h)' }],                                            formula: v => +(v.b*v.h).toFixed(2) },
+  { nombre: 'Triángulo',         campos: [{ key:'b',  label:'Base (b)' },{ key:'h', label:'Altura (h)' }],                                            formula: v => +((v.b*v.h)/2).toFixed(2) },
+  { nombre: 'Círculo',           campos: [{ key:'r',  label:'Radio (r)' }],                                                                           formula: v => +(Math.PI*v.r**2).toFixed(2) },
+  { nombre: 'Trapecio',          campos: [{ key:'B',  label:'Base mayor (B)' },{ key:'b', label:'Base menor (b)' },{ key:'h', label:'Altura (h)' }],  formula: v => +((v.B+v.b)*v.h/2).toFixed(2) },
+  { nombre: 'Rombo',             campos: [{ key:'d1', label:'Diagonal mayor (d₁)' },{ key:'d2', label:'Diagonal menor (d₂)' }],                       formula: v => +((v.d1*v.d2)/2).toFixed(2) },
+  { nombre: 'Paralelogramo',     campos: [{ key:'b',  label:'Base (b)' },{ key:'h', label:'Altura (h)' }],                                            formula: v => +(v.b*v.h).toFixed(2) },
+  { nombre: 'Pentágono Regular', campos: [{ key:'l',  label:'Lado (l)' },{ key:'a', label:'Apotema (a)' }],                                           formula: v => +((5*v.l*v.a)/2).toFixed(2) },
 ]
 const calcFigura = ref(null)
 const calcFiguraObj = ref(null)
@@ -353,57 +361,63 @@ const calcularArea = () => { if (calcFiguraObj.value) calcResultado.value = calc
 
 // ── Quiz ─────────────────────────────────────────────────
 const quizPreguntas = [
-  { pregunta: '¿Cuál es el área de un cuadrado con lado 6 cm?',                    opciones: ['24 cm²','36 cm²','12 cm²','30 cm²'],   correcta: '36 cm²' },
-  { pregunta: '¿Cuál es el área de un triángulo con base 10 cm y altura 4 cm?',    opciones: ['40 cm²','14 cm²','20 cm²','8 cm²'],    correcta: '20 cm²' },
-  { pregunta: '¿Cuál es la fórmula del área del círculo?',                          opciones: ['A = 2πr','A = πr²','A = πd','A = r²'], correcta: 'A = πr²' },
-  { pregunta: '¿Cuál es el área de un rectángulo de 8 cm × 5 cm?',                 opciones: ['13 cm²','26 cm²','40 cm²','45 cm²'],   correcta: '40 cm²' },
-  { pregunta: '¿Cuál es el área de un rombo con diagonales 12 cm y 8 cm?',         opciones: ['48 cm²','96 cm²','20 cm²','24 cm²'],   correcta: '48 cm²' },
+  { pregunta: '¿Cuál es el área de un cuadrado con lado 6 cm?',                        opciones: ['24 cm²','36 cm²','12 cm²','30 cm²'],        correcta: '36 cm²' },
+  { pregunta: '¿Cuál es el área de un triángulo con base 10 cm y altura 4 cm?',        opciones: ['40 cm²','14 cm²','20 cm²','8 cm²'],         correcta: '20 cm²' },
+  { pregunta: '¿Cuál es la fórmula del área del círculo?',                              opciones: ['A = 2πr','A = πr²','A = πd','A = r²'],      correcta: 'A = πr²' },
+  { pregunta: '¿Cuál es el área de un rectángulo de 8 cm × 5 cm?',                     opciones: ['13 cm²','26 cm²','40 cm²','45 cm²'],        correcta: '40 cm²' },
+  { pregunta: '¿Cuál es el área de un rombo con diagonales 12 cm y 8 cm?',             opciones: ['48 cm²','96 cm²','20 cm²','24 cm²'],        correcta: '48 cm²' },
+  { pregunta: '¿Cuál es el área de un paralelogramo con base 7 cm y altura 4 cm?',     opciones: ['11 cm²','28 cm²','14 cm²','22 cm²'],        correcta: '28 cm²' },
+  { pregunta: '¿Cuál es la fórmula del área del pentágono regular?',                    opciones: ['A = 5l','A = (P×a)/2','A = l²','A = Pa'],   correcta: 'A = (P×a)/2' },
 ]
 const quizIndice = ref(0); const quizRespuesta = ref(null); const quizRespondida = ref(false)
 const quizPuntaje = ref(0); const quizTerminado = ref(false); const quizTiempo = ref(20)
 const timerQuiz = ref(null)
 
 const reiniciarQuiz = () => {
-  quizIndice.value = 0; quizRespuesta.value = null; quizRespondida.value = false
-  quizPuntaje.value = 0; quizTerminado.value = false; quizTiempo.value = 20
+  quizIndice.value=0; quizRespuesta.value=null; quizRespondida.value=false
+  quizPuntaje.value=0; quizTerminado.value=false; quizTiempo.value=20
   clearInterval(timerQuiz.value)
   timerQuiz.value = setInterval(() => {
     if (quizRespondida.value) return
     quizTiempo.value--
-    if (quizTiempo.value <= 0) { quizRespondida.value = true; quizRespuesta.value = null }
+    if (quizTiempo.value <= 0) { quizRespondida.value=true; quizRespuesta.value=null }
   }, 1000)
 }
-const responderQuiz = (op) => { if (quizRespondida.value) return; quizRespuesta.value = op; quizRespondida.value = true; if (op === quizPreguntas[quizIndice.value].correcta) quizPuntaje.value++ }
+const responderQuiz = (op) => { if (quizRespondida.value) return; quizRespuesta.value=op; quizRespondida.value=true; if (op===quizPreguntas[quizIndice.value].correcta) quizPuntaje.value++ }
 const siguientePregunta = () => {
-  if (quizIndice.value < quizPreguntas.length - 1) { quizIndice.value++; quizRespondida.value = false; quizRespuesta.value = null; quizTiempo.value = 20 }
-  else { quizTerminado.value = true; clearInterval(timerQuiz.value) }
+  if (quizIndice.value < quizPreguntas.length-1) { quizIndice.value++; quizRespondida.value=false; quizRespuesta.value=null; quizTiempo.value=20 }
+  else { quizTerminado.value=true; clearInterval(timerQuiz.value) }
 }
 
 // ── Adivina ──────────────────────────────────────────────
 const adivinaPreguntas = [
-  { datos: ['l = 9 cm'],                          area: '81 cm²',     opciones: ['Cuadrado','Rectángulo','Rombo','Trapecio'],    correcta: 'Cuadrado' },
-  { datos: ['b = 6 cm','h = 4 cm'],              area: '12 cm²',     opciones: ['Rectángulo','Triángulo','Trapecio','Cuadrado'], correcta: 'Triángulo' },
-  { datos: ['d₁ = 10 cm','d₂ = 6 cm'],          area: '30 cm²',     opciones: ['Triángulo','Cuadrado','Rombo','Círculo'],       correcta: 'Rombo' },
-  { datos: ['r = 7 cm'],                          area: '153.94 cm²', opciones: ['Cuadrado','Círculo','Trapecio','Rectángulo'],   correcta: 'Círculo' },
-  { datos: ['B = 12 cm','b = 8 cm','h = 5 cm'], area: '50 cm²',     opciones: ['Rectángulo','Rombo','Trapecio','Triángulo'],    correcta: 'Trapecio' },
+  { datos: ['l = 9 cm'],                          area: '81 cm²',     opciones: ['Cuadrado','Rectángulo','Rombo','Trapecio'],          correcta: 'Cuadrado' },
+  { datos: ['b = 6 cm','h = 4 cm'],              area: '12 cm²',     opciones: ['Rectángulo','Triángulo','Trapecio','Cuadrado'],       correcta: 'Triángulo' },
+  { datos: ['d₁ = 10 cm','d₂ = 6 cm'],          area: '30 cm²',     opciones: ['Triángulo','Cuadrado','Rombo','Círculo'],             correcta: 'Rombo' },
+  { datos: ['r = 7 cm'],                          area: '153.94 cm²', opciones: ['Cuadrado','Círculo','Trapecio','Rectángulo'],         correcta: 'Círculo' },
+  { datos: ['B = 12 cm','b = 8 cm','h = 5 cm'], area: '50 cm²',     opciones: ['Rectángulo','Rombo','Trapecio','Triángulo'],          correcta: 'Trapecio' },
+  { datos: ['b = 9 cm','h = 5 cm'],              area: '45 cm²',     opciones: ['Triángulo','Paralelogramo','Trapecio','Rombo'],       correcta: 'Paralelogramo' },
+  { datos: ['l = 6 cm','a = 4.13 cm'],           area: '61.95 cm²',  opciones: ['Hexágono','Cuadrado','Pentágono Regular','Triángulo'],correcta: 'Pentágono Regular' },
 ]
 const adivinaIndice = ref(0); const adivinaRespuesta = ref(null); const adivinaRespondida = ref(false)
 const adivinaPuntaje = ref(0); const adivinaTerminado = ref(false)
 const adivinaActual = computed(() => adivinaPreguntas[adivinaIndice.value])
-const responderAdivina = (op) => { if (adivinaRespondida.value) return; adivinaRespuesta.value = op; adivinaRespondida.value = true; if (op === adivinaActual.value.correcta) adivinaPuntaje.value++ }
-const siguienteAdivina = () => { if (adivinaIndice.value < adivinaPreguntas.length-1) { adivinaIndice.value++; adivinaRespondida.value = false; adivinaRespuesta.value = null } else adivinaTerminado.value = true }
+const responderAdivina = (op) => { if (adivinaRespondida.value) return; adivinaRespuesta.value=op; adivinaRespondida.value=true; if (op===adivinaActual.value.correcta) adivinaPuntaje.value++ }
+const siguienteAdivina = () => { if (adivinaIndice.value<adivinaPreguntas.length-1) { adivinaIndice.value++; adivinaRespondida.value=false; adivinaRespuesta.value=null } else adivinaTerminado.value=true }
 const reiniciarAdivina = () => { adivinaIndice.value=0; adivinaRespuesta.value=null; adivinaRespondida.value=false; adivinaPuntaje.value=0; adivinaTerminado.value=false }
 
 // ── Carrera ──────────────────────────────────────────────
 const carreraEjercicios = [
-  { pregunta:'Cuadrado, l = 5 cm. ¿Área?',           opciones:['20 cm²','25 cm²','10 cm²','15 cm²'], correcta:'25 cm²' },
-  { pregunta:'Rectángulo, b = 7, h = 3. ¿Área?',     opciones:['21 cm²','10 cm²','14 cm²','42 cm²'], correcta:'21 cm²' },
-  { pregunta:'Triángulo, b = 8, h = 6. ¿Área?',      opciones:['48 cm²','14 cm²','24 cm²','16 cm²'], correcta:'24 cm²' },
-  { pregunta:'Rombo, d₁=10, d₂=4. ¿Área?',           opciones:['40 cm²','20 cm²','14 cm²','28 cm²'], correcta:'20 cm²' },
-  { pregunta:'Cuadrado, l = 9 cm. ¿Área?',           opciones:['18 cm²','36 cm²','81 cm²','72 cm²'], correcta:'81 cm²' },
-  { pregunta:'Rectángulo, b=10, h=4. ¿Área?',        opciones:['14 cm²','40 cm²','20 cm²','28 cm²'], correcta:'40 cm²' },
-  { pregunta:'Triángulo, b=12, h=5. ¿Área?',         opciones:['60 cm²','17 cm²','30 cm²','24 cm²'], correcta:'30 cm²' },
-  { pregunta:'Rombo, d₁=14, d₂=6. ¿Área?',           opciones:['42 cm²','84 cm²','20 cm²','48 cm²'], correcta:'42 cm²' },
+  { pregunta:'Cuadrado, l = 5 cm. ¿Área?',               opciones:['20 cm²','25 cm²','10 cm²','15 cm²'],  correcta:'25 cm²' },
+  { pregunta:'Rectángulo, b = 7, h = 3. ¿Área?',         opciones:['21 cm²','10 cm²','14 cm²','42 cm²'],  correcta:'21 cm²' },
+  { pregunta:'Triángulo, b = 8, h = 6. ¿Área?',          opciones:['48 cm²','14 cm²','24 cm²','16 cm²'],  correcta:'24 cm²' },
+  { pregunta:'Rombo, d₁=10, d₂=4. ¿Área?',              opciones:['40 cm²','20 cm²','14 cm²','28 cm²'],  correcta:'20 cm²' },
+  { pregunta:'Paralelogramo, b=6, h=4. ¿Área?',          opciones:['10 cm²','24 cm²','12 cm²','48 cm²'],  correcta:'24 cm²' },
+  { pregunta:'Pentágono, l=5, a=3.44. ¿Área aproximada?',opciones:['43 cm²','86 cm²','17.2 cm²','34 cm²'],correcta:'43 cm²' },
+  { pregunta:'Cuadrado, l = 9 cm. ¿Área?',               opciones:['18 cm²','36 cm²','81 cm²','72 cm²'],  correcta:'81 cm²' },
+  { pregunta:'Rectángulo, b=10, h=4. ¿Área?',            opciones:['14 cm²','40 cm²','20 cm²','28 cm²'],  correcta:'40 cm²' },
+  { pregunta:'Triángulo, b=12, h=5. ¿Área?',             opciones:['60 cm²','17 cm²','30 cm²','24 cm²'],  correcta:'30 cm²' },
+  { pregunta:'Rombo, d₁=14, d₂=6. ¿Área?',              opciones:['42 cm²','84 cm²','20 cm²','48 cm²'],  correcta:'42 cm²' },
 ]
 const carreraIniciada = ref(false); const carreraTerminada = ref(false)
 const carreraCorrectas = ref(0); const carreraTiempo = ref(60)
@@ -428,11 +442,13 @@ const reiniciarCarrera = () => { carreraIniciada.value=false; carreraTerminada.v
 
 // ── Ruleta ───────────────────────────────────────────────
 const ruletaOpciones = [
-  { nombre:'Cuadrado',   emoji:'🟦', enunciado:'Un cuadrado tiene lado 8 cm. ¿Cuál es su área?',                      opciones:['64 cm²','32 cm²','16 cm²','48 cm²'], correcta:'64 cm²' },
-  { nombre:'Triángulo',  emoji:'🔺', enunciado:'Triángulo con base 10 cm y altura 7 cm. ¿Área?',                      opciones:['35 cm²','70 cm²','17 cm²','28 cm²'], correcta:'35 cm²' },
-  { nombre:'Círculo',    emoji:'⭕', enunciado:'Círculo con radio 4 cm. ¿Área aproximada?',                           opciones:['50.27 cm²','25.13 cm²','12.57 cm²','78.54 cm²'], correcta:'50.27 cm²' },
-  { nombre:'Rombo',      emoji:'🔷', enunciado:'Rombo con diagonales 16 cm y 10 cm. ¿Área?',                         opciones:['80 cm²','160 cm²','26 cm²','40 cm²'], correcta:'80 cm²' },
-  { nombre:'Rectángulo', emoji:'🟩', enunciado:'Rectángulo de 9 cm de base y 5 cm de altura. ¿Área?',                opciones:['14 cm²','28 cm²','45 cm²','40 cm²'], correcta:'45 cm²' },
+  { nombre:'Cuadrado',          emoji:'🟦', enunciado:'Un cuadrado tiene lado 8 cm. ¿Cuál es su área?',                       opciones:['64 cm²','32 cm²','16 cm²','48 cm²'],          correcta:'64 cm²'    },
+  { nombre:'Triángulo',         emoji:'🔺', enunciado:'Triángulo con base 10 cm y altura 7 cm. ¿Área?',                       opciones:['35 cm²','70 cm²','17 cm²','28 cm²'],          correcta:'35 cm²'    },
+  { nombre:'Círculo',           emoji:'⭕', enunciado:'Círculo con radio 4 cm. ¿Área aproximada?',                            opciones:['50.27 cm²','25.13 cm²','12.57 cm²','78.54 cm²'],correcta:'50.27 cm²'},
+  { nombre:'Rombo',             emoji:'🔷', enunciado:'Rombo con diagonales 16 cm y 10 cm. ¿Área?',                          opciones:['80 cm²','160 cm²','26 cm²','40 cm²'],         correcta:'80 cm²'    },
+  { nombre:'Rectángulo',        emoji:'🟩', enunciado:'Rectángulo de 9 cm de base y 5 cm de altura. ¿Área?',                 opciones:['14 cm²','28 cm²','45 cm²','40 cm²'],          correcta:'45 cm²'    },
+  { nombre:'Paralelogramo',     emoji:'🔹', enunciado:'Paralelogramo con base 8 cm y altura 3 cm. ¿Área?',                   opciones:['11 cm²','24 cm²','48 cm²','16 cm²'],          correcta:'24 cm²'    },
+  { nombre:'Pentágono Regular', emoji:'⭐', enunciado:'Pentágono regular con lado 4 cm y apotema 2.75 cm. ¿Área aproximada?',opciones:['27.5 cm²','55 cm²','11 cm²','22 cm²'],        correcta:'27.5 cm²'  },
 ]
 const ruletaFigura = ref(null); const ruletaGirando = ref(false)
 const ruletaRespuesta = ref(null); const ruletaRespondida = ref(false)
@@ -515,7 +531,7 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .paso-texto { font-size:13px; color:#334155; margin:0; line-height:1.5; padding-top:2px; }
 .solucion-formula { display:flex; align-items:center; justify-content:space-between; border:1.5px solid; border-radius:10px; padding:10px 16px; }
 
-/* Quiz / Adivina / Carrera */
+/* Quiz */
 .quiz-header   { display:flex; justify-content:space-between; align-items:center; }
 .quiz-progreso { font-size:13px; color:#64748b; font-weight:500; }
 .quiz-timer    { font-size:14px; font-weight:700; }
