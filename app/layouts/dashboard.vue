@@ -120,9 +120,9 @@
           </div>
         </div>
 
-        <!-- Secciones -->
+        <!-- Páginas hijas -->
         <div v-else class="seccion-contenido">
-          <NuxtPage />
+          <slot />
         </div>
 
       </main>
@@ -159,7 +159,6 @@ const progreso = computed(() => {
   return Math.round(((idx + 1) / rutas.length) * 100)
 })
 
-// ── Menú ─────────────────────────────────────────────────
 const menu = [
   { label: 'Contenido',   ruta: '/dashboard/contenido',   emoji: '📐', desc: 'Fórmulas y propiedades',    bgLight: 'rgba(59,130,246,0.12)' },
   { label: 'Actividades', ruta: '/dashboard/actividades', emoji: '🎮', desc: 'Juegos interactivos',        bgLight: 'rgba(139,92,246,0.12)' },
@@ -168,7 +167,6 @@ const menu = [
   { label: 'Créditos',    ruta: '/dashboard/creditos',    emoji: '👥', desc: 'Equipo del proyecto',        bgLight: 'rgba(236,72,153,0.12)' },
 ]
 
-// ── Ilustraciones ─────────────────────────────────────────
 const IlustracionContenido = defineComponent({
   render: () => h('svg', { width: 160, height: 120, viewBox: '0 0 160 120' }, [
     h('rect',    { x: 20, y: 30, width: 50, height: 50, rx: 4, fill: 'rgba(255,255,255,0.25)', stroke: 'rgba(255,255,255,0.6)', 'stroke-width': 2 }),
@@ -241,7 +239,6 @@ const secciones = [
   position: relative;
 }
 
-/* ─── Overlay ────────────────────────────── */
 .overlay {
   position: fixed;
   inset: 0;
@@ -250,7 +247,6 @@ const secciones = [
   backdrop-filter: blur(2px);
 }
 
-/* ─── Panel lateral ──────────────────────── */
 .panel {
   position: fixed;
   top: 0; left: 0;
@@ -296,7 +292,6 @@ const secciones = [
 }
 .panel__cerrar:hover { background: rgba(255,255,255,0.12); color: #c8d8f0; }
 
-/* ─── Nav panel ──────────────────────────── */
 .panel__nav {
   flex: 1;
   padding: 16px 12px;
@@ -327,7 +322,6 @@ const secciones = [
 }
 
 .panel__item:hover { background: rgba(255,255,255,0.06); }
-
 .panel__item--activo { background: rgba(56,138,221,0.15); }
 
 .panel__item-icono {
@@ -346,25 +340,20 @@ const secciones = [
 
 .panel__item-nombre { font-size: 14px; font-weight: 500; color: #c8d8f0; }
 .panel__item-desc   { font-size: 11px; color: #4a6fa5; }
-
 .panel__item-flecha { font-size: 14px; color: #2d4a6e; }
 .panel__item:hover .panel__item-flecha { color: #7eb8f7; }
 
-/* ─── Footer panel ───────────────────────── */
 .panel__footer {
   padding: 14px 16px;
   border-top: 0.5px solid rgba(255,255,255,0.07);
 }
 .panel__footer p { font-size: 10px; color: #2d4a6e; margin: 0; line-height: 1.8; }
 
-/* ─── Transición panel ───────────────────── */
 .slide-enter-active, .slide-leave-active { transition: transform 0.25s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
 
-/* ─── Derecha ────────────────────────────── */
 .dashboard__right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
-/* ─── Topbar ─────────────────────────────── */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 24px; height: 56px;
@@ -409,14 +398,10 @@ const secciones = [
   font-size: 12px; font-weight: 500; color: #7eb8f7;
 }
 
-/* ─── Contenido ──────────────────────────── */
 .contenido { flex: 1; overflow-y: auto; background: #e8edf5; }
-
 .seccion-contenido { padding: 32px; }
 
-/* ─── Home ───────────────────────────────── */
 .home { padding: 32px; display: flex; flex-direction: column; gap: 28px; }
-
 .home__titulo { font-size: 24px; font-weight: 700; color: #0f1f3d; margin: 0 0 6px; }
 .home__sub    { font-size: 14px; color: #5a6e8a; margin: 0; }
 
@@ -456,7 +441,6 @@ const secciones = [
 .seccion-card__desc   { font-size: 13px; color: #5a6e8a; margin: 0; line-height: 1.5; flex: 1; }
 .seccion-card__footer { font-size: 13px; font-weight: 600; margin-top: 8px; }
 
-/* ─── Responsivo ─────────────────────────── */
 @media (max-width: 1024px) { .secciones-grid { grid-template-columns: repeat(2, 1fr); } }
 
 @media (max-width: 768px) {
