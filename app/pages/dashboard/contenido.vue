@@ -5,297 +5,384 @@
          TOOLBAR
     ══════════════════════════════════════════════════════ -->
     <div class="geo-toolbar">
+
       <!-- Brand -->
       <div class="tb-brand">
         <div class="brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <polygon points="12,3 22,20 2,20" stroke="currentColor" stroke-width="1.8" fill="rgba(99,102,241,0.15)" stroke-linejoin="round"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <polygon points="12,3 22,20 2,20" stroke="currentColor" stroke-width="2"
+              fill="rgba(99,102,241,0.2)" stroke-linejoin="round"/>
           </svg>
         </div>
         <span class="brand-name">GeoInteractivo</span>
-        <v-chip size="x-small" color="primary" variant="tonal" class="ml-2">OVA</v-chip>
+        <v-chip size="x-small" color="primary" variant="tonal" class="ml-1 d-none d-md-flex">OVA</v-chip>
       </div>
 
-      <!-- Center controls -->
-      <div class="tb-center">
-        <!-- Undo / Clear -->
-        <v-tooltip text="Deshacer último punto (Backspace)" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" icon size="small" variant="text" :disabled="currentPts.length === 0" @click="undoLastPt">
-              <v-icon size="18">mdi-undo-variant</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <v-tooltip text="Cancelar figura actual (Esc)" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" icon size="small" variant="text" :disabled="currentPts.length === 0" @click="cancelCurrent">
-              <v-icon size="18">mdi-eraser</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-
-        <div class="tb-divider" />
-
-        <!-- Zoom -->
-        <v-tooltip text="Alejar" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" icon size="small" variant="text" :disabled="zoom <= MIN_ZOOM" @click="zoomOut">
-              <v-icon size="18">mdi-magnify-minus-outline</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <div class="zoom-badge">{{ Math.round(zoom * 100) }}%</div>
-        <v-tooltip text="Acercar" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" icon size="small" variant="text" :disabled="zoom >= MAX_ZOOM" @click="zoomIn">
-              <v-icon size="18">mdi-magnify-plus-outline</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-
-        <div class="tb-divider" />
-
-        <!-- Unit toggle -->
-        <div class="unit-toggle-wrap">
-          <span class="unit-label">Unidad:</span>
-          <v-btn-toggle v-model="unit" mandatory color="primary" density="compact" variant="outlined" rounded="pill" class="unit-toggle">
-            <v-btn value="cm" size="x-small" class="unit-btn">cm</v-btn>
-            <v-btn value="m" size="x-small" class="unit-btn">m</v-btn>
-          </v-btn-toggle>
-        </div>
-      </div>
-
-      <!-- Right actions -->
-      <div class="tb-right">
-        <v-btn
-          prepend-icon="mdi-plus-circle-outline"
-          color="primary"
-          size="small"
-          variant="tonal"
-          :disabled="currentPts.length < 3"
-          @click="saveShape"
-          class="save-btn"
+      <!-- Drawing tools -->
+      <div class="tb-tools">
+        <v-btn-toggle
+          v-model="tool"
+          mandatory color="primary"
+          density="compact" variant="outlined"
+          rounded="lg"
+          @update:model-value="cancelCurrent"
         >
-          Guardar figura
-        </v-btn>
-        <v-tooltip text="Borrar todo" location="bottom">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon size="small" color="error" variant="tonal"
-              :disabled="shapes.length === 0 && currentPts.length === 0"
-              @click="clearAll"
-            >
-              <v-icon size="18">mdi-delete-sweep-outline</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
+          <v-tooltip text="Dibujar polígono" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" value="polygon" size="small">
+                <v-icon size="16">mdi-vector-polygon</v-icon>
+                <span class="d-none d-lg-inline ml-1">Polígono</span>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="Dibujar círculo" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" value="circle" size="small">
+                <v-icon size="16">mdi-circle-outline</v-icon>
+                <span class="d-none d-lg-inline ml-1">Círculo</span>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="Mover plano" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" value="pan" size="small">
+                <v-icon size="16">mdi-hand-back-left-outline</v-icon>
+                <span class="d-none d-lg-inline ml-1">Mover</span>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </v-btn-toggle>
       </div>
-    </div>
+
+      <div class="tb-divider" />
+
+      <!-- Undo / cancel -->
+      <v-tooltip text="Deshacer vértice (Backspace)" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon size="small" variant="text"
+            :disabled="currentPts.length === 0" @click="undoLastPt">
+            <v-icon size="17">mdi-undo-variant</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Cancelar figura (Esc)" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon size="small" variant="text"
+            :disabled="!isDrawing" @click="cancelCurrent">
+            <v-icon size="17">mdi-eraser</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+
+      <div class="tb-divider" />
+
+      <!-- Zoom -->
+      <v-tooltip text="Alejar" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon size="small" variant="text" :disabled="zoom<=MIN_ZOOM" @click="zoomOut">
+            <v-icon size="17">mdi-magnify-minus-outline</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <div class="zoom-badge font-mono">{{ Math.round(zoom*100) }}%</div>
+      <v-tooltip text="Acercar" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon size="small" variant="text" :disabled="zoom>=MAX_ZOOM" @click="zoomIn">
+            <v-icon size="17">mdi-magnify-plus-outline</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Centrar vista" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon size="small" variant="text" @click="resetView">
+            <v-icon size="17">mdi-home-outline</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+
+      <div class="tb-divider" />
+
+      <!-- Unit -->
+      <div class="unit-wrap">
+        <span class="unit-label d-none d-sm-inline">Unidad:</span>
+        <v-btn-toggle v-model="unit" mandatory color="primary"
+          density="compact" variant="outlined" rounded="pill">
+          <v-btn value="cm" size="x-small" class="unit-btn">cm</v-btn>
+          <v-btn value="m"  size="x-small" class="unit-btn">m</v-btn>
+        </v-btn-toggle>
+      </div>
+
+      <!-- Spacer -->
+      <div style="flex:1" />
+
+      <!-- Save -->
+      <v-btn prepend-icon="mdi-plus-circle-outline" color="primary"
+        size="small" variant="tonal" :disabled="!canSave" @click="saveShape"
+        class="save-btn d-none d-sm-flex">
+        Guardar
+      </v-btn>
+      <v-btn icon color="primary" size="small" variant="tonal"
+        :disabled="!canSave" @click="saveShape" class="d-flex d-sm-none">
+        <v-icon size="18">mdi-plus-circle-outline</v-icon>
+      </v-btn>
+
+    </div><!-- /toolbar -->
 
     <!-- ══════════════════════════════════════════════════════
          MAIN LAYOUT
     ══════════════════════════════════════════════════════ -->
     <div class="main-layout">
 
-      <!-- ── Canvas Area ─────────────────────────────────── -->
+      <!-- ── Canvas ─────────────────────────────────────── -->
       <div class="canvas-area" ref="canvasWrapper">
         <canvas
           ref="canvasEl"
-          class="geo-canvas"
-          :class="{ 'cursor-pointer': hoveringShape, 'cursor-crosshair': !hoveringShape }"
+          :class="['geo-canvas', cursorClass]"
           @click="onCanvasClick"
+          @mousedown="onMouseDown"
           @mousemove="onMouseMove"
           @mouseleave="onMouseLeave"
+          @mouseup="onMouseUp"
+          @wheel.prevent="onWheel"
+          @touchstart.prevent="onTouchStart"
+          @touchmove.prevent="onTouchMove"
+          @touchend.prevent="onTouchEnd"
         />
 
-        <!-- HUD: Instructions -->
+        <!-- HUD badges -->
         <div class="hud hud-bl">
           <div class="hud-pill">
             <v-icon size="13" class="mr-1">mdi-information-slab-circle-outline</v-icon>
-            {{ hudMessage }}
+            {{ hudMsg }}
           </div>
         </div>
 
-        <!-- HUD: Coordinates -->
         <Transition name="fade-hud">
-          <div class="hud hud-br" v-if="mouseCart">
+          <div class="hud hud-br d-none d-md-block" v-if="mouseCart">
             <div class="hud-pill font-mono">
-              x: {{ fmtCoord(mouseCart.x) }} &nbsp;|&nbsp; y: {{ fmtCoord(mouseCart.y) }}&nbsp;{{ unit }}
+              x:&nbsp;{{ fc(mouseCart.x) }}&nbsp;&nbsp;y:&nbsp;{{ fc(mouseCart.y) }}&nbsp;{{ unit }}
             </div>
           </div>
         </Transition>
 
-        <!-- HUD: Close-shape hint -->
         <Transition name="fade-hud">
           <div class="hud hud-tc" v-if="nearFirst && currentPts.length >= 3">
-            <div class="hud-pill hud-success">
+            <div class="hud-pill hud-green">
               <v-icon size="14" class="mr-1">mdi-check-circle</v-icon>
-              Clic aquí para cerrar la figura · Enter
+              Clic aquí para cerrar · Enter
             </div>
           </div>
         </Transition>
 
-        <!-- HUD: Shape count badge -->
-        <div class="hud hud-tl" v-if="shapes.length > 0">
+        <Transition name="fade-hud">
+          <div class="hud hud-tc" v-if="tool==='circle' && circleCenter">
+            <div class="hud-pill hud-teal">
+              <v-icon size="14" class="mr-1">mdi-circle-outline</v-icon>
+              Clic para fijar radio ({{ fv(previewR) }} {{ unit }})
+            </div>
+          </div>
+        </Transition>
+
+        <div class="hud hud-tl" v-if="shapes.length">
           <div class="hud-pill">
-            <v-icon size="12" class="mr-1">mdi-vector-polygon</v-icon>
-            {{ shapes.length }} figura{{ shapes.length !== 1 ? 's' : '' }}
+            <v-icon size="12" class="mr-1">mdi-layers-outline</v-icon>
+            {{ shapes.length }} figura{{ shapes.length!==1?'s':'' }}
           </div>
         </div>
       </div>
 
-      <!-- ── Info Panel ───────────────────────────────────── -->
-      <div class="info-panel">
-        <!-- ─── Active shape info ─── -->
+      <!-- ── Info panel (desktop right / mobile bottom sheet) ─ -->
+      <div class="info-panel" :class="{ 'panel-open': selectedId !== null }">
+
+        <!-- Mobile handle -->
+        <div class="drag-handle d-md-none" @click="selectedId=null">
+          <div class="drag-bar" />
+        </div>
+
+        <!-- ─── Active shape ─── -->
         <template v-if="activeShape && activeDef">
+
+          <!-- Header -->
           <div class="panel-header">
-            <div class="shape-icon-wrap" :style="{ background: activeCol.bg }">
-              <v-icon :color="activeCol.stroke" size="22">{{ activeDef.icon }}</v-icon>
-            </div>
+            <!-- Color dot / picker trigger -->
+            <v-menu location="bottom start" :close-on-content-click="false">
+              <template #activator="{ props }">
+                <div v-bind="props" class="color-dot-btn" :style="{ background: activeCol.stroke }"
+                  title="Cambiar color">
+                  <v-icon size="11" color="white">mdi-eyedropper</v-icon>
+                </div>
+              </template>
+              <!-- Color palette menu -->
+              <v-card class="color-picker-card pa-3" elevation="8" rounded="xl">
+                <div class="picker-title mb-2">Color de figura</div>
+                <div class="color-grid">
+                  <div
+                    v-for="(col, idx) in PALETTE" :key="idx"
+                    class="color-swatch"
+                    :class="{ 'swatch-active': activeShape.colorIdx === idx }"
+                    :style="{ background: col.stroke }"
+                    @click="setShapeColor(idx)"
+                  >
+                    <v-icon v-if="activeShape.colorIdx===idx" size="14" color="white">mdi-check</v-icon>
+                  </div>
+                </div>
+              </v-card>
+            </v-menu>
+
             <div class="panel-title-block">
-              <div class="panel-shape-name">{{ activeDef.name }}</div>
-              <div class="panel-shape-sub">
-                {{ activeShape.sideLengths.length }} lados ·
-                <span class="font-mono">{{ fmtVal(activeShape.area) }} {{ unit }}²</span>
+              <div class="panel-name">{{ activeDef.name }}</div>
+              <div class="panel-sub font-mono">
+                <template v-if="activeShape.shapeType==='circle'">
+                  r={{ fv(activeShape.radius) }} {{ unit }} ·
+                </template>
+                <template v-else>
+                  {{ activeShape.sideLengths.length }} lados ·
+                </template>
+                {{ fv(activeShape.area) }} {{ unit }}²
               </div>
             </div>
-            <v-btn icon size="x-small" variant="text" class="ml-auto" @click="selectedId = null">
-              <v-icon size="16">mdi-close</v-icon>
+
+            <!-- Delete single -->
+            <v-tooltip text="Eliminar figura (Del)" location="bottom">
+              <template #activator="{ props }">
+                <v-btn v-bind="props" icon size="x-small" color="error" variant="tonal"
+                  class="ml-auto" @click="deleteSelected">
+                  <v-icon size="15">mdi-delete-outline</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+
+            <v-btn icon size="x-small" variant="text" class="ml-1" @click="selectedId=null">
+              <v-icon size="15">mdi-close</v-icon>
             </v-btn>
           </div>
 
           <!-- Formula chips -->
-          <div class="formula-chips">
-            <div class="formula-chip primary-formula">{{ activeDef.areaFormula }}</div>
-            <div class="formula-chip secondary-formula">{{ activeDef.perimFormula }}</div>
+          <div class="formula-row">
+            <div class="chip-formula chip-a">{{ activeDef.areaFormula }}</div>
+            <div class="chip-formula chip-p">{{ activeDef.perimFormula }}</div>
           </div>
 
           <!-- Tabs -->
-          <v-tabs v-model="infoTab" color="primary" density="compact" class="info-tabs">
-            <v-tab value="calc" class="tab-item">
-              <v-icon start size="13">mdi-calculator-variant-outline</v-icon>
-              Calc.
+          <v-tabs v-model="tab" color="primary" density="compact" class="info-tabs">
+            <v-tab value="calc">
+              <v-icon start size="13">mdi-calculator-variant-outline</v-icon>Calc.
             </v-tab>
-            <v-tab value="props" class="tab-item">
-              <v-icon start size="13">mdi-format-list-bulleted-square</v-icon>
-              Info
+            <v-tab value="props">
+              <v-icon start size="13">mdi-format-list-bulleted-square</v-icon>Info
             </v-tab>
-            <v-tab value="example" class="tab-item">
-              <v-icon start size="13">mdi-book-open-variant-outline</v-icon>
-              Ejemplo
+            <v-tab value="ex">
+              <v-icon start size="13">mdi-book-open-variant-outline</v-icon>Ejemplo
             </v-tab>
           </v-tabs>
-          <div class="tab-divider" />
+          <div class="tab-sep" />
 
           <div class="panel-body">
-            <v-window v-model="infoTab">
+            <v-window v-model="tab">
 
-              <!-- ── CALCULATOR TAB ── -->
+              <!-- CALC TAB -->
               <v-window-item value="calc">
                 <div class="tab-content">
-                  <!-- Side lengths -->
-                  <div class="section-title">
-                    <v-icon size="13" class="mr-1">mdi-ruler</v-icon>
-                    Lados medidos
-                  </div>
-                  <div class="sides-grid">
-                    <div
-                      v-for="(len, i) in activeShape.sideLengths"
-                      :key="i"
-                      class="side-item"
-                    >
-                      <span class="side-name">{{ sideLabel(i, activeShape.sideLengths.length) }}</span>
-                      <span class="side-val font-mono">{{ fmtVal(len) }} {{ unit }}</span>
-                    </div>
-                  </div>
-
-                  <div class="result-divider" />
-
-                  <!-- Area -->
-                  <div class="result-card result-area">
-                    <div class="result-meta">
-                      <div class="result-label">
-                        <v-icon size="14" color="primary" class="mr-1">mdi-border-outside</v-icon>
-                        ÁREA
+                  <!-- Circle -->
+                  <template v-if="activeShape.shapeType==='circle'">
+                    <div class="sec-title"><v-icon size="13" class="mr-1">mdi-ruler</v-icon>Medidas</div>
+                    <div class="sides-grid">
+                      <div class="side-item">
+                        <span class="side-name">Radio (r)</span>
+                        <span class="side-val font-mono">{{ fv(activeShape.radius) }} {{ unit }}</span>
                       </div>
-                      <div class="result-formula font-mono">{{ activeDef.areaFormula }}</div>
-                    </div>
-                    <div class="result-number">
-                      <span class="result-val text-primary">{{ fmtVal(activeShape.area) }}</span>
-                      <span class="result-unit">{{ unit }}²</span>
-                    </div>
-                  </div>
-
-                  <!-- Perimeter -->
-                  <div class="result-card result-perim">
-                    <div class="result-meta">
-                      <div class="result-label">
-                        <v-icon size="14" color="secondary" class="mr-1">mdi-vector-polyline</v-icon>
-                        PERÍMETRO
+                      <div class="side-item">
+                        <span class="side-name">Diámetro (d)</span>
+                        <span class="side-val font-mono">{{ fv(activeShape.radius*2) }} {{ unit }}</span>
                       </div>
-                      <div class="result-formula font-mono">{{ activeDef.perimFormula }}</div>
                     </div>
-                    <div class="result-number">
-                      <span class="result-val text-secondary">{{ fmtVal(activeShape.perimeter) }}</span>
-                      <span class="result-unit">{{ unit }}</span>
+                    <div class="coord-row mt-2">
+                      <div class="coord-dot" :style="{background: activeCol.stroke}">O</div>
+                      <span class="coord-val font-mono">Centro ({{ fc(activeShape.center.x) }}, {{ fc(activeShape.center.y) }})</span>
+                    </div>
+                  </template>
+
+                  <!-- Polygon -->
+                  <template v-else>
+                    <div class="sec-title"><v-icon size="13" class="mr-1">mdi-ruler</v-icon>Lados</div>
+                    <div class="sides-grid">
+                      <div v-for="(len,i) in activeShape.sideLengths" :key="i" class="side-item">
+                        <span class="side-name">{{ sideLabel(i, activeShape.sideLengths.length) }}</span>
+                        <span class="side-val font-mono">{{ fv(len) }} {{ unit }}</span>
+                      </div>
+                    </div>
+                  </template>
+
+                  <div class="sep" />
+
+                  <!-- Area card -->
+                  <div class="res-card" :style="{ borderColor: activeCol.stroke+'33', background: activeCol.stroke+'0d' }">
+                    <div class="res-meta">
+                      <div class="res-label" :style="{ color: activeCol.stroke }">
+                        <v-icon size="13" class="mr-1" :color="activeCol.stroke">mdi-border-outside</v-icon>ÁREA
+                      </div>
+                      <div class="res-formula font-mono">{{ activeDef.areaFormula }}</div>
+                    </div>
+                    <div class="res-number">
+                      <span class="res-val" :style="{ color: activeCol.stroke }">{{ fv(activeShape.area) }}</span>
+                      <span class="res-unit">{{ unit }}²</span>
                     </div>
                   </div>
 
-                  <div class="result-divider" />
-
-                  <!-- Vertex coords -->
-                  <div class="section-title">
-                    <v-icon size="13" class="mr-1">mdi-map-marker-multiple-outline</v-icon>
-                    Coordenadas de vértices
-                  </div>
-                  <div class="coords-list">
-                    <div v-for="(pt, i) in activeShape.points" :key="i" class="coord-row">
-                      <div class="coord-letter">{{ String.fromCharCode(65 + i) }}</div>
-                      <div class="coord-val font-mono">({{ fmtCoord(pt.x) }}, {{ fmtCoord(pt.y) }})</div>
+                  <!-- Perimeter card -->
+                  <div class="res-card" style="border-color:rgba(20,184,166,0.25);background:rgba(20,184,166,0.06)">
+                    <div class="res-meta">
+                      <div class="res-label" style="color:#0d9488">
+                        <v-icon size="13" class="mr-1" color="#0d9488">mdi-vector-polyline</v-icon>
+                        {{ activeShape.shapeType==='circle'?'CIRCUNFERENCIA':'PERÍMETRO' }}
+                      </div>
+                      <div class="res-formula font-mono">{{ activeDef.perimFormula }}</div>
+                    </div>
+                    <div class="res-number">
+                      <span class="res-val" style="color:#0d9488">{{ fv(activeShape.perimeter) }}</span>
+                      <span class="res-unit">{{ unit }}</span>
                     </div>
                   </div>
+
+                  <!-- Vertices (polygon only) -->
+                  <template v-if="activeShape.shapeType!=='circle'">
+                    <div class="sep" />
+                    <div class="sec-title"><v-icon size="13" class="mr-1">mdi-map-marker-multiple-outline</v-icon>Vértices</div>
+                    <div class="coords-list">
+                      <div v-for="(pt,i) in activeShape.points" :key="i" class="coord-row">
+                        <div class="coord-dot" :style="{ background: activeCol.stroke }">{{ String.fromCharCode(65+i) }}</div>
+                        <span class="coord-val font-mono">({{ fc(pt.x) }}, {{ fc(pt.y) }})</span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </v-window-item>
 
-              <!-- ── PROPERTIES TAB ── -->
+              <!-- PROPS TAB -->
               <v-window-item value="props">
                 <div class="tab-content">
-                  <div class="section-title">
-                    <v-icon size="13" class="mr-1">mdi-check-all</v-icon>
-                    Propiedades
-                  </div>
+                  <div class="sec-title"><v-icon size="13" class="mr-1">mdi-check-all</v-icon>Propiedades</div>
                   <div class="props-list">
-                    <div v-for="(prop, i) in activeDef.properties" :key="i" class="prop-row">
-                      <v-icon size="13" color="primary" class="mr-2 flex-shrink-0">mdi-check-decagram-outline</v-icon>
-                      <span class="prop-text">{{ prop }}</span>
+                    <div v-for="(p,i) in activeDef.properties" :key="i" class="prop-row">
+                      <v-icon size="13" :color="activeCol.stroke" class="mr-2 mt-0-5 flex-shrink-0">mdi-check-decagram-outline</v-icon>
+                      <span class="prop-text">{{ p }}</span>
                     </div>
                   </div>
 
-                  <div class="result-divider" />
-
-                  <div class="section-title">
-                    <v-icon size="13" class="mr-1">mdi-tag-multiple-outline</v-icon>
-                    Tipos / Clasificación
-                  </div>
+                  <div class="sep" />
+                  <div class="sec-title"><v-icon size="13" class="mr-1">mdi-tag-multiple-outline</v-icon>Tipos</div>
                   <div class="types-list">
-                    <div v-for="(tipo, i) in activeDef.types" :key="i" class="type-row">
-                      <v-chip
-                        size="x-small"
-                        :color="i % 2 === 0 ? 'primary' : 'secondary'"
-                        variant="tonal"
-                        class="mr-2 flex-shrink-0"
-                      >
-                        {{ tipo.name }}
+                    <div v-for="(t,i) in activeDef.types" :key="i" class="type-row">
+                      <v-chip size="x-small" :color="i%2===0?'primary':'secondary'" variant="tonal" class="flex-shrink-0">
+                        {{ t.name }}
                       </v-chip>
-                      <span class="type-desc">{{ tipo.desc }}</span>
+                      <span class="type-desc">{{ t.desc }}</span>
                     </div>
                   </div>
 
-                  <div class="result-divider" />
-
+                  <div class="sep" />
                   <div class="curiosity-card">
-                    <div class="curiosity-label">
+                    <div class="curiosity-title">
                       <v-icon size="14" color="amber-darken-2">mdi-lightbulb-on-outline</v-icon>
                       ¿Sabías que?
                     </div>
@@ -304,25 +391,20 @@
                 </div>
               </v-window-item>
 
-              <!-- ── EXAMPLE TAB ── -->
-              <v-window-item value="example">
+              <!-- EXAMPLE TAB -->
+              <v-window-item value="ex">
                 <div class="tab-content">
-                  <div class="section-title mb-3">
-                    <v-icon size="13" class="mr-1">mdi-pencil-ruler</v-icon>
-                    Ejemplo resuelto
-                    <v-chip size="x-small" class="ml-2" color="primary" variant="tonal">{{ unit }}</v-chip>
+                  <div class="sec-title mb-3">
+                    <v-icon size="13" class="mr-1">mdi-pencil-ruler</v-icon>Ejemplo resuelto
+                    <v-chip size="x-small" :color="activeCol.stroke" variant="tonal" class="ml-2">{{ unit }}</v-chip>
                   </div>
                   <div class="steps-list">
-                    <div
-                      v-for="(step, i) in activeDef.exampleSteps(unit)"
-                      :key="i"
-                      class="step-row"
-                    >
-                      <div class="step-num" :class="`step-num-${i}`">{{ i + 1 }}</div>
+                    <div v-for="(s,i) in activeDef.exSteps(unit)" :key="i" class="step-row">
+                      <div class="step-num" :style="{ background: activeCol.stroke }">{{ i+1 }}</div>
                       <div class="step-body">
-                        <div class="step-title">{{ step.title }}</div>
+                        <div class="step-title">{{ s.title }}</div>
                         <!-- eslint-disable-next-line vue/no-v-html -->
-                        <div class="step-content" v-html="step.content" />
+                        <div class="step-content" v-html="s.content" />
                       </div>
                     </div>
                   </div>
@@ -333,59 +415,54 @@
           </div>
         </template>
 
-        <!-- ─── Empty / guide state ─── -->
+        <!-- ─── Empty state ─── -->
         <template v-else>
           <div class="empty-panel">
-            <div class="empty-icon">
-              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                <polygon points="28,8 50,46 6,46" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.08)" stroke-linejoin="round"/>
-                <polygon points="28,16 44,40 12,40" stroke="#6366f1" stroke-width="1" stroke-dasharray="3,2" fill="none" stroke-linejoin="round"/>
+            <div class="empty-svg">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                <polygon points="30,8 54,50 6,50" stroke="#6366f1" stroke-width="2"
+                  fill="rgba(99,102,241,0.08)" stroke-linejoin="round"/>
+                <circle cx="44" cy="20" r="9" stroke="#14b8a6" stroke-width="1.5"
+                  fill="rgba(20,184,166,0.06)" stroke-dasharray="3,2"/>
               </svg>
             </div>
-            <h3 class="empty-title">Dibuja un polígono</h3>
-            <p class="empty-desc">Haz clic en el plano cartesiano para colocar vértices y explorar geometría interactiva.</p>
+            <h3 class="empty-title">Dibuja en el plano</h3>
+            <p class="empty-desc">Elige una herramienta y toca el plano para crear figuras.</p>
+
             <div class="hint-list">
               <div class="hint-row">
-                <div class="hint-icon"><v-icon size="15" color="primary">mdi-cursor-default-click-outline</v-icon></div>
-                <span>Clic para agregar vértices</span>
+                <v-icon size="15" color="primary">mdi-vector-polygon</v-icon>
+                <span><strong>Polígono:</strong> clic para vértices → clic en ● para cerrar</span>
               </div>
               <div class="hint-row">
-                <div class="hint-icon"><v-icon size="15" color="success">mdi-check-circle-outline</v-icon></div>
-                <span>Clic en el <strong>primer punto</strong> para cerrar</span>
+                <v-icon size="15" color="teal">mdi-circle-outline</v-icon>
+                <span><strong>Círculo:</strong> 1.º clic = centro · 2.º clic = radio</span>
               </div>
               <div class="hint-row">
-                <div class="hint-icon"><v-icon size="15" color="info">mdi-cursor-pointer</v-icon></div>
-                <span>Clic en una figura guardada para ver su info</span>
+                <v-icon size="15" color="orange">mdi-hand-back-left-outline</v-icon>
+                <span><strong>Mover:</strong> arrastra el plano · pellizca en móvil</span>
               </div>
               <div class="hint-row">
-                <div class="hint-icon"><v-icon size="15" color="warning">mdi-keyboard-outline</v-icon></div>
-                <span><strong>Enter</strong> cierra · <strong>Backspace</strong> deshace · <strong>Esc</strong> cancela</span>
+                <v-icon size="15" color="error">mdi-delete-outline</v-icon>
+                <span>Selecciona una figura → botón <strong>🗑</strong> para eliminarla</span>
               </div>
-            </div>
-
-            <!-- Keyboard shortcuts mini card -->
-            <div class="shortcuts-card mt-4">
-              <div class="shortcuts-title">Atajos de teclado</div>
-              <div class="shortcut-row">
-                <kbd>Enter</kbd><span>Cerrar figura</span>
+              <div class="hint-row">
+                <v-icon size="15" color="purple">mdi-eyedropper</v-icon>
+                <span>Selecciona una figura → <strong>punto de color</strong> para cambiarlo</span>
               </div>
-              <div class="shortcut-row">
-                <kbd>Backspace</kbd><span>Deshacer vértice</span>
-              </div>
-              <div class="shortcut-row">
-                <kbd>Esc</kbd><span>Cancelar figura</span>
-              </div>
-              <div class="shortcut-row">
-                <kbd>+</kbd> / <kbd>-</kbd><span>Zoom in / out</span>
+              <div class="hint-row d-none d-md-flex">
+                <v-icon size="15" color="grey">mdi-keyboard-outline</v-icon>
+                <span><kbd>Enter</kbd> cerrar · <kbd>Backspace</kbd> deshacer · <kbd>Esc</kbd> cancelar · <kbd>Del</kbd> eliminar · scroll zoom</span>
               </div>
             </div>
           </div>
         </template>
-      </div>
-    </div>
+      </div><!-- /info-panel -->
 
-  </div>
+    </div><!-- /main-layout -->
+  </div><!-- /geo-ova -->
 </template>
+
 
 <!-- ================================================================
      SCRIPT
@@ -393,1081 +470,1019 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 
-// ── Page meta ────────────────────────────────────────────────────────
 definePageMeta({ layout: 'dashboard' })
 
-// ── Constants ────────────────────────────────────────────────────────
-const BASE_CELL  = 64      // pixels per 1 grid unit at zoom = 1
-const CLOSE_DIST = 16      // pixels threshold to snap-close polygon
-const MIN_ZOOM   = 0.4
-const MAX_ZOOM   = 4.0
+// ── Constants ──────────────────────────────────────────────────────────
+const BASE_CELL  = 60
+const CLOSE_DIST = 18
+const MIN_ZOOM   = 0.2
+const MAX_ZOOM   = 5.0
 const ZOOM_STEP  = 0.2
 
-/** Canvas color palette for shapes */
 const PALETTE = [
-  { bg: 'rgba(99,102,241,0.1)',  stroke: '#6366f1', dot: '#4f46e5',  fill: 'rgba(99,102,241,0.10)'  },
-  { bg: 'rgba(20,184,166,0.1)',  stroke: '#14b8a6', dot: '#0d9488',  fill: 'rgba(20,184,166,0.10)'  },
-  { bg: 'rgba(245,158,11,0.1)',  stroke: '#f59e0b', dot: '#d97706',  fill: 'rgba(245,158,11,0.10)'  },
-  { bg: 'rgba(239,68,68,0.1)',   stroke: '#ef4444', dot: '#dc2626',  fill: 'rgba(239,68,68,0.10)'   },
-  { bg: 'rgba(168,85,247,0.1)',  stroke: '#a855f7', dot: '#9333ea',  fill: 'rgba(168,85,247,0.10)'  },
-  { bg: 'rgba(34,197,94,0.1)',   stroke: '#22c55e', dot: '#16a34a',  fill: 'rgba(34,197,94,0.10)'   },
+  { stroke:'#6366f1', fill:'rgba(99,102,241,0.12)'  },
+  { stroke:'#14b8a6', fill:'rgba(20,184,166,0.12)'  },
+  { stroke:'#f59e0b', fill:'rgba(245,158,11,0.12)'  },
+  { stroke:'#ef4444', fill:'rgba(239,68,68,0.12)'   },
+  { stroke:'#a855f7', fill:'rgba(168,85,247,0.12)'  },
+  { stroke:'#22c55e', fill:'rgba(34,197,94,0.12)'   },
+  { stroke:'#ec4899', fill:'rgba(236,72,153,0.12)'  },
+  { stroke:'#fb923c', fill:'rgba(251,146,60,0.12)'  },
+  { stroke:'#06b6d4', fill:'rgba(6,182,212,0.12)'   },
+  { stroke:'#84cc16', fill:'rgba(132,204,22,0.12)'  },
+  { stroke:'#f43f5e', fill:'rgba(244,63,94,0.12)'   },
+  { stroke:'#8b5cf6', fill:'rgba(139,92,246,0.12)'  },
 ]
 
-// ── Shape definitions (educational content) ──────────────────────────
+// ── Shape definitions ──────────────────────────────────────────────────
 const DEFS = {
-  triangle: {
-    name: 'Triángulo', icon: 'mdi-triangle-outline', sideCount: 3,
-    areaFormula: 'A = (b × h) / 2',
-    perimFormula: 'P = a + b + c',
-    properties: [
-      'Suma de ángulos interiores = 180°',
-      'Todo lado es menor que la suma de los otros dos',
-      '3 vértices, 3 lados y 3 ángulos internos',
-      'Es la figura más rígida estructuralmente',
+  circle: {
+    name:'Círculo', icon:'mdi-circle-outline',
+    areaFormula:'A = π·r²', perimFormula:'C = 2·π·r',
+    properties:[
+      'Todos los puntos equidistan del centro (radio r)',
+      'El diámetro d = 2r es la cuerda más larga',
+      'Posee infinitos ejes de simetría',
+      'π ≈ 3.14159 es irracional y trascendente',
+      'Circunferencia = borde; círculo = región interior',
     ],
-    types: [
-      { name: 'Equilátero',  desc: 'Tres lados iguales; ángulos de 60°' },
-      { name: 'Isósceles',   desc: 'Exactamente dos lados iguales' },
-      { name: 'Escaleno',    desc: 'Los tres lados son diferentes' },
-      { name: 'Rectángulo',  desc: 'Tiene un ángulo interior de 90°' },
+    types:[
+      {name:'Círculo',        desc:'Región plana delimitada por la circunferencia'},
+      {name:'Circunferencia', desc:'Solo el contorno (puntos equidistantes del centro)'},
+      {name:'Semicírculo',    desc:'Mitad dividida por un diámetro'},
+      {name:'Sector circular',desc:'Porción acotada por dos radios y un arco'},
     ],
-    curiosity: 'Las pirámides de Giza tienen cuatro caras triangulares. El triángulo es la única figura que no puede deformarse sin cambiar el largo de sus lados — por eso se usa en puentes, torres y armaduras.',
-    exampleSteps: (u) => [
-      { title: 'Datos',              content: `Base <strong>b = 6 ${u}</strong>, Altura <strong>h = 4 ${u}</strong>` },
-      { title: 'Fórmula del área',   content: 'A = (b × h) / 2' },
-      { title: 'Sustitución',        content: 'A = (6 × 4) / 2 = 24 / 2' },
-      { title: 'Resultado',          content: `<strong class="result-hl">A = 12 ${u}²</strong>` },
+    curiosity:'Con solo 3.14159 podemos llegar a la Luna con un error de ¡0.3 mm! Hoy se conocen más de 100 billones de dígitos de π gracias a supercomputadoras.',
+    exSteps:(u)=>[
+      {title:'Datos',          content:`Radio <strong>r = 5 ${u}</strong>`},
+      {title:'Fórmula área',   content:'A = π · r²'},
+      {title:'Sustitución',    content:'A = 3.14159 × 5² = 3.14159 × 25'},
+      {title:'Área',           content:`<strong class="hl">A ≈ 78.54 ${u}²</strong>`},
+      {title:'Circunferencia', content:`C = 2π × 5 = 10π ≈ <strong class="hl">31.42 ${u}</strong>`},
     ],
   },
-  square: {
-    name: 'Cuadrado', icon: 'mdi-square-outline', sideCount: 4,
-    areaFormula: 'A = l²',
-    perimFormula: 'P = 4l',
-    properties: [
+  triangle:{
+    name:'Triángulo', icon:'mdi-triangle-outline',
+    areaFormula:'A = (b·h)/2', perimFormula:'P = a+b+c',
+    properties:[
+      'Suma de ángulos interiores = 180°',
+      'Todo lado < suma de los otros dos',
+      '3 vértices, 3 lados, 3 ángulos',
+      'Figura más rígida estructuralmente',
+    ],
+    types:[
+      {name:'Equilátero',  desc:'Tres lados iguales; ángulos de 60°'},
+      {name:'Isósceles',   desc:'Exactamente dos lados iguales'},
+      {name:'Escaleno',    desc:'Los tres lados son diferentes'},
+      {name:'Rectángulo',  desc:'Contiene un ángulo de 90°'},
+    ],
+    curiosity:'El triángulo es la única figura que no puede deformarse sin cambiar el largo de sus lados. Por eso se usa en puentes, torres y armaduras.',
+    exSteps:(u)=>[
+      {title:'Datos',          content:`b = <strong>6 ${u}</strong>, h = <strong>4 ${u}</strong>`},
+      {title:'Fórmula',        content:'A = (b × h) / 2'},
+      {title:'Sustitución',    content:'A = (6 × 4) / 2 = 12'},
+      {title:'Resultado',      content:`<strong class="hl">A = 12 ${u}²</strong>`},
+    ],
+  },
+  square:{
+    name:'Cuadrado', icon:'mdi-square-outline',
+    areaFormula:'A = l²', perimFormula:'P = 4l',
+    properties:[
       'Cuatro lados iguales de longitud l',
       'Cuatro ángulos rectos de 90°',
       'Diagonales iguales, perpendiculares y se bisecan',
       'Es a la vez rectángulo y rombo',
     ],
-    types: [{ name: 'Regular', desc: 'Siempre es un polígono regular (único tipo)' }],
-    curiosity: 'Un tablero de ajedrez tiene exactamente 64 cuadrados iguales. Los "cuadrados mágicos" son arreglos numéricos donde la suma de cada fila, columna y diagonal siempre es la misma — los chinos los conocían hace más de 3000 años.',
-    exampleSteps: (u) => [
-      { title: 'Datos',            content: `Lado <strong>l = 7 ${u}</strong>` },
-      { title: 'Fórmula del área', content: 'A = l²' },
-      { title: 'Sustitución',      content: 'A = 7² = 7 × 7 = 49' },
-      { title: 'Resultado',        content: `<strong class="result-hl">A = 49 ${u}²</strong> &nbsp;·&nbsp; P = 4 × 7 = <strong>28 ${u}</strong>` },
+    types:[{name:'Regular', desc:'Siempre es un polígono regular (único tipo)'}],
+    curiosity:'Un tablero de ajedrez tiene 64 cuadrados iguales. Los cuadrados mágicos, conocidos en China hace 3 000 años, suman lo mismo en filas, columnas y diagonales.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`l = <strong>7 ${u}</strong>`},
+      {title:'Fórmula',     content:'A = l²'},
+      {title:'Sustitución', content:'A = 7² = 49'},
+      {title:'Resultado',   content:`<strong class="hl">A = 49 ${u}²</strong> · P = 4×7 = <strong>28 ${u}</strong>`},
     ],
   },
-  rectangle: {
-    name: 'Rectángulo', icon: 'mdi-rectangle-outline', sideCount: 4,
-    areaFormula: 'A = b × h',
-    perimFormula: 'P = 2(b + h)',
-    properties: [
+  rectangle:{
+    name:'Rectángulo', icon:'mdi-rectangle-outline',
+    areaFormula:'A = b·h', perimFormula:'P = 2(b+h)',
+    properties:[
       'Lados opuestos iguales y paralelos',
       'Cuatro ángulos rectos de 90°',
-      'Diagonales iguales que se bisecan mutuamente',
+      'Diagonales iguales que se bisecan',
       'Todo cuadrado es rectángulo; no viceversa',
     ],
-    types: [
-      { name: 'Cuadrado', desc: 'Caso especial donde b = h' },
-      { name: 'Oblongo',  desc: 'Caso general donde b ≠ h' },
+    types:[
+      {name:'Cuadrado', desc:'Caso especial donde b = h'},
+      {name:'Oblongo',  desc:'Caso general donde b ≠ h'},
     ],
-    curiosity: 'El formato de papel A4 tiene proporción √2:1. Al doblar A4 a la mitad obtienes A5 con las mismas proporciones. Este principio (ISO 216) permite escalar documentos sin recortar márgenes.',
-    exampleSteps: (u) => [
-      { title: 'Datos',            content: `Base <strong>b = 8 ${u}</strong>, Altura <strong>h = 5 ${u}</strong>` },
-      { title: 'Fórmula del área', content: 'A = b × h' },
-      { title: 'Sustitución',      content: 'A = 8 × 5' },
-      { title: 'Resultado',        content: `<strong class="result-hl">A = 40 ${u}²</strong> &nbsp;·&nbsp; P = 2(8+5) = <strong>26 ${u}</strong>` },
+    curiosity:'El papel A4 tiene proporción √2:1. Al doblarlo obtienes A5 con las mismas proporciones — principio ISO 216 que evita cortar márgenes al escalar.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`b = <strong>8 ${u}</strong>, h = <strong>5 ${u}</strong>`},
+      {title:'Fórmula',     content:'A = b × h'},
+      {title:'Sustitución', content:'A = 8 × 5 = 40'},
+      {title:'Resultado',   content:`<strong class="hl">A = 40 ${u}²</strong> · P = 2(8+5) = <strong>26 ${u}</strong>`},
     ],
   },
-  rhombus: {
-    name: 'Rombo', icon: 'mdi-rhombus-outline', sideCount: 4,
-    areaFormula: 'A = (D × d) / 2',
-    perimFormula: 'P = 4l',
-    properties: [
+  rhombus:{
+    name:'Rombo', icon:'mdi-rhombus-outline',
+    areaFormula:'A = (D·d)/2', perimFormula:'P = 4l',
+    properties:[
       'Cuatro lados iguales de longitud l',
       'Ángulos opuestos son iguales',
-      'Las diagonales son perpendiculares entre sí',
+      'Diagonales perpendiculares entre sí',
       'Las diagonales se bisecan mutuamente',
     ],
-    types: [
-      { name: 'Cuadrado', desc: 'Caso especial con ángulos de 90°' },
-      { name: 'General',  desc: 'Lados iguales, ángulos oblicuos' },
+    types:[
+      {name:'Cuadrado', desc:'Caso especial con ángulos de 90°'},
+      {name:'General',  desc:'Lados iguales, ángulos oblicuos'},
     ],
-    curiosity: 'El símbolo ♦ en los naipes es un rombo. Las redes metálicas de cerco y las mallas de seguridad usan rombo porque es estable lateralmente y puede deformarse bajo tensión sin romperse.',
-    exampleSteps: (u) => [
-      { title: 'Datos',            content: `Diagonal mayor <strong>D = 10 ${u}</strong>, menor <strong>d = 6 ${u}</strong>` },
-      { title: 'Fórmula del área', content: 'A = (D × d) / 2' },
-      { title: 'Sustitución',      content: 'A = (10 × 6) / 2 = 60 / 2' },
-      { title: 'Resultado',        content: `<strong class="result-hl">A = 30 ${u}²</strong>` },
+    curiosity:'Las mallas metálicas de cerco usan forma de rombo: son estables lateralmente y pueden deformarse bajo tensión sin romperse.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`D = <strong>10 ${u}</strong>, d = <strong>6 ${u}</strong>`},
+      {title:'Fórmula',     content:'A = (D × d) / 2'},
+      {title:'Sustitución', content:'A = (10 × 6) / 2 = 30'},
+      {title:'Resultado',   content:`<strong class="hl">A = 30 ${u}²</strong>`},
     ],
   },
-  parallelogram: {
-    name: 'Paralelogramo', icon: 'mdi-rhombus-split-outline', sideCount: 4,
-    areaFormula: 'A = b × h',
-    perimFormula: 'P = 2(a + b)',
-    properties: [
-      'Lados opuestos paralelos e iguales (a y b)',
+  parallelogram:{
+    name:'Paralelogramo', icon:'mdi-rhombus-split-outline',
+    areaFormula:'A = b·h', perimFormula:'P = 2(a+b)',
+    properties:[
+      'Lados opuestos paralelos e iguales',
       'Ángulos opuestos son iguales',
-      'Las diagonales se bisecan mutuamente',
-      'Ángulos adyacentes son suplementarios (suman 180°)',
+      'Diagonales se bisecan mutuamente',
+      'Ángulos adyacentes suman 180°',
     ],
-    types: [
-      { name: 'Rectángulo', desc: 'Ángulos de 90°' },
-      { name: 'Rombo',      desc: 'Todos los lados iguales' },
-      { name: 'Cuadrado',   desc: 'Lados iguales + ángulos de 90°' },
+    types:[
+      {name:'Rectángulo', desc:'Ángulos de 90°'},
+      {name:'Rombo',      desc:'Todos los lados iguales'},
+      {name:'Cuadrado',   desc:'Lados iguales + 90°'},
     ],
-    curiosity: 'La "Regla del Paralelogramo" en física describe cómo sumar dos fuerzas o vectores. Las tijeras articuladas, los pantógrafos y los mecanismos de cuatro barras se basan en este principio.',
-    exampleSteps: (u) => [
-      { title: 'Datos',            content: `Base <strong>b = 9 ${u}</strong>, Altura perpendicular <strong>h = 4 ${u}</strong>` },
-      { title: 'Fórmula del área', content: 'A = b × h' },
-      { title: 'Sustitución',      content: 'A = 9 × 4' },
-      { title: 'Resultado',        content: `<strong class="result-hl">A = 36 ${u}²</strong> &nbsp;·&nbsp; P = 2(9+5) = <strong>28 ${u}</strong>` },
+    curiosity:'La regla del paralelogramo describe cómo sumar vectores en física. Los pantógrafos y mecanismos de cuatro barras se basan en este principio.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`b = <strong>9 ${u}</strong>, h = <strong>4 ${u}</strong>`},
+      {title:'Fórmula',     content:'A = b × h'},
+      {title:'Sustitución', content:'A = 9 × 4 = 36'},
+      {title:'Resultado',   content:`<strong class="hl">A = 36 ${u}²</strong>`},
     ],
   },
-  trapezoid: {
-    name: 'Trapecio', icon: 'mdi-tray', sideCount: 4,
-    areaFormula: 'A = ((B+b)/2) × h',
-    perimFormula: 'P = a+b+c+d',
-    properties: [
+  trapezoid:{
+    name:'Trapecio', icon:'mdi-tray',
+    areaFormula:'A = ((B+b)/2)·h', perimFormula:'P = a+b+c+d',
+    properties:[
       'Exactamente un par de lados paralelos (las bases)',
-      'Base mayor B siempre es más larga que base menor b',
+      'Base mayor B > base menor b',
       'Ángulos del mismo lado suman 180°',
       'Segmento medio = (B + b) / 2',
     ],
-    types: [
-      { name: 'Isósceles',   desc: 'Los lados no paralelos son iguales' },
-      { name: 'Rectángulo',  desc: 'Un lado lateral es perpendicular a las bases' },
-      { name: 'Escaleno',    desc: 'Todos los lados son diferentes' },
+    types:[
+      {name:'Isósceles',  desc:'Lados no paralelos iguales'},
+      {name:'Rectángulo', desc:'Un lateral perpendicular a las bases'},
+      {name:'Escaleno',   desc:'Todos los lados diferentes'},
     ],
-    curiosity: 'Las represas hidráulicas tienen sección transversal trapezoidal — ancha en la base, angosta arriba — para distribuir mejor la presión del agua. Los techos a dos aguas y las cajas de resonancia de instrumentos usan este principio.',
-    exampleSteps: (u) => [
-      { title: 'Datos',            content: `B = <strong>10 ${u}</strong>, b = <strong>6 ${u}</strong>, h = <strong>4 ${u}</strong>` },
-      { title: 'Fórmula del área', content: 'A = ((B + b) / 2) × h' },
-      { title: 'Sustitución',      content: 'A = ((10 + 6) / 2) × 4 = 8 × 4' },
-      { title: 'Resultado',        content: `<strong class="result-hl">A = 32 ${u}²</strong>` },
+    curiosity:'Las represas tienen sección trapezoidal: ancha en la base, angosta arriba, para distribuir mejor la presión del agua.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`B = <strong>10 ${u}</strong>, b = <strong>6 ${u}</strong>, h = <strong>4 ${u}</strong>`},
+      {title:'Fórmula',     content:'A = ((B+b)/2) × h'},
+      {title:'Sustitución', content:'A = ((10+6)/2) × 4 = 8 × 4'},
+      {title:'Resultado',   content:`<strong class="hl">A = 32 ${u}²</strong>`},
     ],
   },
-  pentagon: {
-    name: 'Pentágono', icon: 'mdi-pentagon-outline', sideCount: 5,
-    areaFormula: '≈ 1.720 × l² (regular)',
-    perimFormula: 'P = 5l (regular)',
-    properties: [
+  pentagon:{
+    name:'Pentágono', icon:'mdi-pentagon-outline',
+    areaFormula:'A ≈ 1.72·l²', perimFormula:'P = 5l',
+    properties:[
       '5 lados y 5 ángulos interiores',
-      'Suma de ángulos interiores = 540°',
-      'Ángulo interior en regular = 108°',
+      'Suma de ángulos = 540°',
+      'Ángulo interior (regular) = 108°',
       '5 ejes de simetría si es regular',
     ],
-    types: [
-      { name: 'Regular',   desc: 'Todos los lados y ángulos son iguales' },
-      { name: 'Irregular', desc: 'Lados o ángulos difieren entre sí' },
+    types:[
+      {name:'Regular',   desc:'Todos los lados y ángulos iguales'},
+      {name:'Irregular', desc:'Lados o ángulos diferentes'},
     ],
-    curiosity: 'El Departamento de Defensa de EE.UU. lleva el nombre de su sede: el Pentágono, uno de los edificios de oficinas más grandes del mundo. La estrella de 5 puntas se forma uniendo los vértices alternos de un pentágono regular.',
-    exampleSteps: (u) => [
-      { title: 'Datos (regular)',   content: `Lado <strong>l = 5 ${u}</strong>` },
-      { title: 'Área aproximada',   content: 'A ≈ (5/4) × l² × tan(54°) ≈ 1.720 × l²' },
-      { title: 'Sustitución',       content: 'A ≈ 1.720 × 5² = 1.720 × 25 = 43.01' },
-      { title: 'Resultado',         content: `<strong class="result-hl">A ≈ 43.01 ${u}²</strong> &nbsp;·&nbsp; P = 5×5 = <strong>25 ${u}</strong>` },
+    curiosity:'La estrella de 5 puntas se forma uniendo vértices alternos de un pentágono regular. El edificio del Pentágono en EE.UU. es uno de los más grandes del mundo.',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`l = <strong>5 ${u}</strong>`},
+      {title:'Fórmula',     content:'A ≈ 1.72 × l²'},
+      {title:'Sustitución', content:'A ≈ 1.72 × 25 = 43.01'},
+      {title:'Resultado',   content:`<strong class="hl">A ≈ 43.01 ${u}²</strong> · P = <strong>25 ${u}</strong>`},
     ],
   },
-  hexagon: {
-    name: 'Hexágono', icon: 'mdi-hexagon-outline', sideCount: 6,
-    areaFormula: '(3√3/2) × l²',
-    perimFormula: 'P = 6l (regular)',
-    properties: [
+  hexagon:{
+    name:'Hexágono', icon:'mdi-hexagon-outline',
+    areaFormula:'A=(3√3/2)·l²', perimFormula:'P = 6l',
+    properties:[
       '6 lados y 6 ángulos interiores',
-      'Suma de ángulos interiores = 720°',
-      'Ángulo interior en regular = 120°',
-      'El hexágono regular tesela el plano sin huecos',
+      'Suma de ángulos = 720°',
+      'Ángulo interior (regular) = 120°',
+      'Tesela el plano sin huecos',
     ],
-    types: [
-      { name: 'Regular',   desc: 'Todos los lados y ángulos son iguales' },
-      { name: 'Irregular', desc: 'Lados o ángulos difieren entre sí' },
+    types:[
+      {name:'Regular',   desc:'Todos los lados y ángulos iguales'},
+      {name:'Irregular', desc:'Lados o ángulos diferentes'},
     ],
-    curiosity: '¡Las celdas de los panales de abeja son hexagonales! Karl von Frisch demostró que esta forma maximiza el almacenamiento usando la mínima cantidad de cera — la naturaleza encontró la solución óptima antes que los matemáticos.',
-    exampleSteps: (u) => [
-      { title: 'Datos (regular)',  content: `Lado <strong>l = 4 ${u}</strong>` },
-      { title: 'Fórmula',         content: 'A = (3√3 / 2) × l² ≈ 2.598 × l²' },
-      { title: 'Sustitución',     content: 'A ≈ 2.598 × 4² = 2.598 × 16 = 41.57' },
-      { title: 'Resultado',       content: `<strong class="result-hl">A ≈ 41.57 ${u}²</strong> &nbsp;·&nbsp; P = 6×4 = <strong>24 ${u}</strong>` },
+    curiosity:'Las celdas del panal de abeja son hexagonales porque maximizan el volumen con la mínima cantidad de cera. ¡La naturaleza resolvió este problema de optimización sola!',
+    exSteps:(u)=>[
+      {title:'Datos',       content:`l = <strong>4 ${u}</strong>`},
+      {title:'Fórmula',     content:'A ≈ 2.598 × l²'},
+      {title:'Sustitución', content:'A ≈ 2.598 × 16 = 41.57'},
+      {title:'Resultado',   content:`<strong class="hl">A ≈ 41.57 ${u}²</strong> · P = <strong>24 ${u}</strong>`},
     ],
   },
-  quadrilateral: {
-    name: 'Cuadrilátero Irr.', icon: 'mdi-vector-square', sideCount: 4,
-    areaFormula: 'Shoelace',
-    perimFormula: 'P = a+b+c+d',
-    properties: [
+  quadrilateral:{
+    name:'Cuadrilátero Irr.', icon:'mdi-vector-square',
+    areaFormula:'Shoelace', perimFormula:'P = a+b+c+d',
+    properties:[
       '4 lados y 4 ángulos interiores',
-      'Suma de ángulos interiores = 360°',
-      'Sin pares de lados paralelos identificables',
+      'Suma de ángulos = 360°',
+      'Sin lados paralelos identificables',
     ],
-    types: [
-      { name: 'Convexo',  desc: 'Todos los ángulos < 180°' },
-      { name: 'Cóncavo',  desc: 'Al menos un ángulo > 180°' },
+    types:[
+      {name:'Convexo', desc:'Todos los ángulos < 180°'},
+      {name:'Cóncavo', desc:'Al menos un ángulo > 180°'},
     ],
-    curiosity: 'Los cuadriláteros son la familia de polígonos más diversa. Cualquier forma cerrada de 4 lados rectos, sin importar cuán irregular, pertenece a esta familia.',
-    exampleSteps: (u) => [
-      { title: 'Método: Gauss (Shoelace)', content: 'Para cualquier polígono de n vértices' },
-      { title: 'Fórmula',    content: 'A = ½ |Σᵢ (xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ)|' },
-      { title: 'Perímetro',  content: 'P = Σᵢ √((xᵢ₊₁−xᵢ)² + (yᵢ₊₁−yᵢ)²)' },
-      { title: 'Ángulos',    content: 'Suma = (n − 2) × 180° = 360° para n=4' },
+    curiosity:'Los cuadriláteros son la familia más diversa de polígonos. Cualquier figura cerrada de 4 lados rectos pertenece a esta familia.',
+    exSteps:(u)=>[
+      {title:'Método Gauss',   content:'Para cualquier polígono de n vértices'},
+      {title:'Fórmula área',   content:'A = ½ |Σᵢ (xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ)|'},
+      {title:'Perímetro',      content:'P = Σᵢ √((Δx)²+(Δy)²)'},
+      {title:'Suma ángulos',   content:'(4−2) × 180° = 360°'},
     ],
   },
-  polygon: {
-    name: 'Polígono', icon: 'mdi-vector-polygon', sideCount: null,
-    areaFormula: 'Shoelace',
-    perimFormula: 'P = Σ lados',
-    properties: [
+  polygon:{
+    name:'Polígono', icon:'mdi-vector-polygon',
+    areaFormula:'Shoelace', perimFormula:'P = Σ lados',
+    properties:[
       'n lados = n ángulos = n vértices',
-      'Suma de ángulos int. = (n − 2) × 180°',
+      'Suma ángulos int. = (n−2)×180°',
       'Puede ser convexo o cóncavo',
     ],
-    types: [
-      { name: 'Convexo',  desc: 'Todos los ángulos interiores < 180°' },
-      { name: 'Cóncavo',  desc: 'Al menos un ángulo interior > 180°' },
-      { name: 'Regular',  desc: 'Lados y ángulos todos iguales' },
+    types:[
+      {name:'Convexo', desc:'Todos los ángulos < 180°'},
+      {name:'Cóncavo', desc:'Al menos un ángulo > 180°'},
+      {name:'Regular', desc:'Lados y ángulos todos iguales'},
     ],
-    curiosity: 'Arquímedes usó polígonos de 96 lados inscritos y circunscritos para demostrar que π se encuentra entre 3.1408 y 3.1429. Con más lados, cualquier polígono regular se aproxima a un círculo.',
-    exampleSteps: (u) => [
-      { title: 'Fórmula de Gauss', content: `Para n vértices (x₁,y₁) ... (xₙ,yₙ)` },
-      { title: 'Área',             content: 'A = ½ |Σᵢ (xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ)|' },
-      { title: 'Perímetro',        content: 'P = Σᵢ √((xᵢ₊₁−xᵢ)² + (yᵢ₊₁−yᵢ)²)' },
-      { title: 'Ángulos interiores', content: `Suma = (n − 2) × 180°` },
+    curiosity:'Arquímedes usó polígonos de 96 lados para acotar π entre 3.1408 y 3.1429. Con más lados, cualquier polígono regular se aproxima a un círculo.',
+    exSteps:(u)=>[
+      {title:'Fórmula de Gauss', content:'n vértices (x₁,y₁)...(xₙ,yₙ)'},
+      {title:'Área',             content:'A = ½|Σᵢ(xᵢ·yᵢ₊₁−xᵢ₊₁·yᵢ)|'},
+      {title:'Perímetro',        content:'P = Σᵢ √((Δx)²+(Δy)²)'},
+      {title:'Ángulos int.',     content:'Suma = (n−2)×180°'},
     ],
   },
 }
 
-// ── Reactive state ────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────
 const canvasEl      = ref(null)
 const canvasWrapper = ref(null)
 const zoom          = ref(1)
 const unit          = ref('cm')
-const currentPts    = ref([])       // in-progress Cartesian points
-const shapes        = ref([])
-const selectedId    = ref(null)
+const tool          = ref('polygon')
+
+// Pan
+const panX       = ref(0)
+const panY       = ref(0)
+const panning    = ref(false)
+const panOrigin  = ref(null)
+
+// Draw
+const currentPts    = ref([])
+const circleCenter  = ref(null)
+const previewR      = ref(0)
 const mouseCart     = ref(null)
-const mouseCanvasPt = ref(null)
+const mousePx       = ref(null)
 const nearFirst     = ref(false)
-const hoveringShape = ref(false)
-const infoTab       = ref('calc')
+const hoverShape    = ref(false)
 
-let ctx = null
-let ro  = null
-let idCounter = 0
+// Shapes & selection
+const shapes     = ref([])
+const selectedId = ref(null)
+let idCtr = 0
 
-// ── Geometry math ─────────────────────────────────────────────────────
-const dist = (a, b) => Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+// Touch
+let twoFinger        = false
+let lastTouchDist    = 0
+let lastTouchMid     = null
+let touchMoved       = false
+let mouseDownDragged = false
 
-function computeSides(pts) {
-  return pts.map((p, i) => dist(p, pts[(i + 1) % pts.length]))
-}
+// UI
+const tab = ref('calc')
 
-function shoelaceArea(pts) {
-  let s = 0
-  for (let i = 0; i < pts.length; i++) {
-    const j = (i + 1) % pts.length
-    s += pts[i].x * pts[j].y - pts[j].x * pts[i].y
+// ── Computed ───────────────────────────────────────────────────────────
+const activeShape = computed(()=> shapes.value.find(s=>s.id===selectedId.value)??null)
+const activeDef   = computed(()=> activeShape.value?(DEFS[activeShape.value.type]??DEFS.polygon):null)
+const activeCol   = computed(()=> PALETTE[(activeShape.value?.colorIdx??0)%PALETTE.length])
+
+const isDrawing = computed(()=> currentPts.value.length>0 || circleCenter.value!==null)
+const canSave   = computed(()=>{
+  if(tool.value==='polygon') return currentPts.value.length>=3
+  if(tool.value==='circle')  return circleCenter.value!==null && previewR.value>0.05
+  return false
+})
+
+const cursorClass = computed(()=>{
+  if(tool.value==='pan') return panning.value?'cur-grabbing':'cur-grab'
+  if(hoverShape.value)   return 'cur-pointer'
+  return 'cur-crosshair'
+})
+
+const hudMsg = computed(()=>{
+  if(tool.value==='pan')    return 'Arrastra para mover · Scroll/pellizca para zoom'
+  if(tool.value==='circle'){
+    if(!circleCenter.value)   return 'Toca el plano para colocar el centro del círculo'
+    return `Centro fijo — toca para establecer el radio (${fv(previewR.value)} ${unit.value})`
   }
-  return Math.abs(s) / 2
-}
+  if(currentPts.value.length===0) return 'Toca el plano para colocar el primer vértice'
+  if(currentPts.value.length<3)   return `${currentPts.value.length} vértice(s) — necesitas ${3-currentPts.value.length} más`
+  return `${currentPts.value.length} vértices — toca ● o presiona Enter para cerrar`
+})
 
-function centroid(pts) {
-  return {
-    x: pts.reduce((s, p) => s + p.x, 0) / pts.length,
-    y: pts.reduce((s, p) => s + p.y, 0) / pts.length,
-  }
-}
+// ── Geometry helpers ───────────────────────────────────────────────────
+const dist=(a,b)=>Math.sqrt((b.x-a.x)**2+(b.y-a.y)**2)
+const shoelace=pts=>{let s=0;for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;s+=pts[i].x*pts[j].y-pts[j].x*pts[i].y}return Math.abs(s)/2}
+const centroid=pts=>({x:pts.reduce((s,p)=>s+p.x,0)/pts.length,y:pts.reduce((s,p)=>s+p.y,0)/pts.length})
+const sides=pts=>pts.map((p,i)=>dist(p,pts[(i+1)%pts.length]))
 
-function pointInPoly(pt, poly) {
-  let inside = false
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const xi = poly[i].x, yi = poly[i].y
-    const xj = poly[j].x, yj = poly[j].y
-    if (((yi > pt.y) !== (yj > pt.y)) && pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi) + xi)
-      inside = !inside
+function ptInPoly(pt,poly){
+  let inside=false
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y
+    if(((yi>pt.y)!==(yj>pt.y))&&pt.x<((xj-xi)*(pt.y-yi))/(yj-yi)+xi)inside=!inside
   }
   return inside
 }
 
-function angleAtVertex(a, b, c) {
-  const v1 = { x: a.x - b.x, y: a.y - b.y }
-  const v2 = { x: c.x - b.x, y: c.y - b.y }
-  const d = v1.x * v2.x + v1.y * v2.y
-  const m = Math.sqrt(v1.x ** 2 + v1.y ** 2) * Math.sqrt(v2.x ** 2 + v2.y ** 2)
-  if (m < 1e-10) return 0
-  return Math.acos(Math.max(-1, Math.min(1, d / m))) * (180 / Math.PI)
+function isParallel(v1,v2){
+  const cross=Math.abs(v1.x*v2.y-v1.y*v2.x)
+  const m=Math.sqrt(v1.x**2+v1.y**2)*Math.sqrt(v2.x**2+v2.y**2)
+  return m>1e-10&&cross/m<0.13
 }
 
-function isParallel(v1, v2) {
-  const cross = Math.abs(v1.x * v2.y - v1.y * v2.x)
-  const m = Math.sqrt(v1.x ** 2 + v1.y ** 2) * Math.sqrt(v2.x ** 2 + v2.y ** 2)
-  return m > 1e-10 && cross / m < 0.13
-}
-
-function classifyShape(pts) {
-  const n = pts.length
-  if (n === 3) return 'triangle'
-  if (n === 4) return classifyQuad(pts)
-  if (n === 5) return 'pentagon'
-  if (n === 6) return 'hexagon'
+function classify(pts){
+  const n=pts.length
+  if(n===3)return 'triangle'
+  if(n===4){
+    const sl=sides(pts)
+    const angs=pts.map((p,i)=>{
+      const a=pts[(i+3)%4],b=p,c=pts[(i+1)%4]
+      const v1={x:a.x-b.x,y:a.y-b.y},v2={x:c.x-b.x,y:c.y-b.y}
+      const d=v1.x*v2.x+v1.y*v2.y,m=Math.sqrt(v1.x**2+v1.y**2)*Math.sqrt(v2.x**2+v2.y**2)
+      return m<1e-10?0:Math.acos(Math.max(-1,Math.min(1,d/m)))*(180/Math.PI)
+    })
+    const eq=(a,b)=>Math.abs(a-b)/Math.max(a,b,1e-6)<0.13
+    const allSEq=eq(sl[0],sl[1])&&eq(sl[1],sl[2])&&eq(sl[2],sl[3])
+    const oppSEq=eq(sl[0],sl[2])&&eq(sl[1],sl[3])
+    const allR=angs.every(a=>Math.abs(a-90)<10)
+    const vecs=pts.map((p,i)=>{const q=pts[(i+1)%4];return{x:q.x-p.x,y:q.y-p.y}})
+    const p02=isParallel(vecs[0],vecs[2]),p13=isParallel(vecs[1],vecs[3])
+    if(allSEq&&allR)return 'square'
+    if(allR&&oppSEq)return 'rectangle'
+    if(allSEq&&p02&&p13)return 'rhombus'
+    if(p02&&p13)return 'parallelogram'
+    if(p02||p13)return 'trapezoid'
+    return 'quadrilateral'
+  }
+  if(n===5)return 'pentagon'
+  if(n===6)return 'hexagon'
   return 'polygon'
 }
 
-function classifyQuad(pts) {
-  const sides  = computeSides(pts)
-  const angles = pts.map((p, i) => angleAtVertex(pts[(i + 3) % 4], p, pts[(i + 1) % 4]))
-  const sEq = (a, b) => Math.abs(a - b) / Math.max(a, b, 1e-6) < 0.13
+// ── Coordinate transforms ──────────────────────────────────────────────
+function origin(){
+  if(!canvasEl.value)return{ox:0,oy:0}
+  return{ox:canvasEl.value.width/2+panX.value,oy:canvasEl.value.height/2+panY.value}
+}
+function toCvs(p){
+  const sc=BASE_CELL*zoom.value,{ox,oy}=origin()
+  return{x:ox+p.x*sc,y:oy-p.y*sc}
+}
+function toCart2(cx,cy){
+  const sc=BASE_CELL*zoom.value,{ox,oy}=origin()
+  return{x:(cx-ox)/sc,y:(oy-cy)/sc}
+}
+const snap=v=>Math.round(v)
 
-  const allSidesEq = sEq(sides[0], sides[1]) && sEq(sides[1], sides[2]) && sEq(sides[2], sides[3])
-  const oppSidesEq = sEq(sides[0], sides[2]) && sEq(sides[1], sides[3])
-  const allRight   = angles.every(a => Math.abs(a - 90) < 10)
-  const vecs       = pts.map((p, i) => { const q = pts[(i+1)%4]; return { x: q.x-p.x, y: q.y-p.y } })
-  const p02        = isParallel(vecs[0], vecs[2])
-  const p13        = isParallel(vecs[1], vecs[3])
+// ── Draw ───────────────────────────────────────────────────────────────
+let ctx=null
 
-  if (allSidesEq && allRight)   return 'square'
-  if (allRight && oppSidesEq)   return 'rectangle'
-  if (allSidesEq && p02 && p13) return 'rhombus'
-  if (p02 && p13)               return 'parallelogram'
-  if (p02 || p13)               return 'trapezoid'
-  return 'quadrilateral'
+function draw(){
+  if(!ctx||!canvasEl.value)return
+  const W=canvasEl.value.width,H=canvasEl.value.height
+  ctx.clearRect(0,0,W,H)
+  ctx.fillStyle='#f8fafc'; ctx.fillRect(0,0,W,H)
+  drawGrid(W,H)
+  drawAxes(W,H)
+  shapes.value.forEach(s=>s.shapeType==='circle'?drawCircle(s):drawPoly(s))
+  drawInProgress()
 }
 
-// ── Computed ──────────────────────────────────────────────────────────
-const activeShape = computed(() => shapes.value.find(s => s.id === selectedId.value) ?? null)
-const activeDef   = computed(() => activeShape.value ? DEFS[activeShape.value.type] ?? DEFS.polygon : null)
-const activeCol   = computed(() => PALETTE[(activeShape.value?.colorIdx ?? 0) % PALETTE.length])
-
-const hudMessage = computed(() => {
-  if (currentPts.value.length === 0) return 'Clic para colocar el primer vértice en el plano'
-  if (currentPts.value.length === 1) return '1 vértice — agrega al menos 2 más para cerrar'
-  if (currentPts.value.length === 2) return '2 vértices — agrega al menos 1 más para cerrar'
-  return `${currentPts.value.length} vértices — clic en el punto inicial ● para cerrar`
-})
-
-// ── Canvas helpers ────────────────────────────────────────────────────
-function toCanvas(cartPt, scale, ox, oy) {
-  return { x: ox + cartPt.x * scale, y: oy - cartPt.y * scale }
-}
-function toCart(cx, cy, scale, ox, oy) {
-  return { x: (cx - ox) / scale, y: (oy - cy) / scale }
-}
-function snap(v) { return Math.round(v) }
-
-// ── Main draw function ────────────────────────────────────────────────
-function draw() {
-  if (!ctx || !canvasEl.value) return
-  const cv = canvasEl.value
-  const W = cv.width, H = cv.height
-  const scale = BASE_CELL * zoom.value
-  const ox = W / 2, oy = H / 2
-
-  ctx.clearRect(0, 0, W, H)
-
-  // Background
-  ctx.fillStyle = '#f8fafc'
-  ctx.fillRect(0, 0, W, H)
-
-  drawGrid(W, H, ox, oy, scale)
-  drawAxes(W, H, ox, oy, scale)
-
-  shapes.value.forEach(sh => drawShape(sh, ox, oy, scale, sh.id === selectedId.value))
-  drawInProgress(ox, oy, scale)
-}
-
-function drawGrid(W, H, ox, oy, scale) {
-  let step = 1
-  if (scale < 18)  step = 10
-  else if (scale < 30) step = 5
-  else if (scale < 52) step = 2
-
-  ctx.save()
-  ctx.strokeStyle = '#e2e8f0'
-  ctx.lineWidth = 0.5
-
-  const sX = Math.ceil(-ox / scale / step) * step
-  const eX = Math.floor((W - ox) / scale / step) * step
-  for (let cx = sX; cx <= eX; cx += step) {
-    const px = ox + cx * scale
-    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke()
-  }
-
-  const sY = Math.ceil(-(H - oy) / scale / step) * step
-  const eY = Math.floor(oy / scale / step) * step
-  for (let cy = sY; cy <= eY; cy += step) {
-    const py = oy - cy * scale
-    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke()
-  }
-
-  ctx.fillStyle = '#94a3b8'
-  ctx.font = '10px "Courier New", monospace'
-
-  ctx.textAlign = 'center'
-  for (let cx = sX; cx <= eX; cx += step) {
-    if (cx === 0) continue
-    ctx.fillText(cx, ox + cx * scale, oy + 16)
-  }
-
-  ctx.textAlign = 'right'
-  for (let cy = sY; cy <= eY; cy += step) {
-    if (cy === 0) continue
-    ctx.fillText(cy, ox - 6, oy - cy * scale + 4)
-  }
+function drawGrid(W,H){
+  const sc=BASE_CELL*zoom.value,{ox,oy}=origin()
+  let step=1
+  if(sc<12)step=20
+  else if(sc<22)step=10
+  else if(sc<38)step=5
+  else if(sc<52)step=2
+  ctx.save(); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=0.5
+  const sX=Math.ceil(-ox/sc/step)*step,eX=Math.floor((W-ox)/sc/step)*step
+  for(let x=sX;x<=eX;x+=step){const px=ox+x*sc;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke()}
+  const sY=Math.ceil(-(H-oy)/sc/step)*step,eY=Math.floor(oy/sc/step)*step
+  for(let y=sY;y<=eY;y+=step){const py=oy-y*sc;ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke()}
+  ctx.fillStyle='#94a3b8'; ctx.font='9.5px "Courier New",monospace'
+  ctx.textAlign='center'
+  for(let x=sX;x<=eX;x+=step){if(x===0)continue;const px=ox+x*sc;if(px<5||px>W-5)continue;ctx.fillText(x,px,Math.min(Math.max(oy+13,12),H-3))}
+  ctx.textAlign='right'
+  for(let y=sY;y<=eY;y+=step){if(y===0)continue;const py=oy-y*sc;if(py<5||py>H-5)continue;ctx.fillText(y,Math.max(ox-4,18),py+4)}
   ctx.restore()
 }
 
-function drawAxes(W, H, ox, oy) {
-  ctx.save()
-  ctx.strokeStyle = '#64748b'
-  ctx.lineWidth = 1.5
-
-  ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke()
-
-  ctx.fillStyle = '#64748b'
-  ctx.beginPath(); ctx.moveTo(W-13, oy-5); ctx.lineTo(W, oy); ctx.lineTo(W-13, oy+5); ctx.fill()
-  ctx.beginPath(); ctx.moveTo(ox-5, 13); ctx.lineTo(ox, 0); ctx.lineTo(ox+5, 13); ctx.fill()
-
-  ctx.font = 'bold 11px sans-serif'
-  ctx.fillStyle = '#475569'
-  ctx.textAlign = 'left'
-  ctx.fillText(`x (${unit.value})`, W - 36, oy - 9)
-  ctx.textAlign = 'center'
-  ctx.fillText(`y (${unit.value})`, ox + 20, 14)
-  ctx.textAlign = 'right'
-  ctx.font = '10px monospace'
-  ctx.fillText('O', ox - 6, oy - 6)
+function drawAxes(W,H){
+  const{ox,oy}=origin()
+  ctx.save(); ctx.strokeStyle='#64748b'; ctx.fillStyle='#64748b'; ctx.lineWidth=1.5
+  ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke()
+  ctx.beginPath();ctx.moveTo(W-12,oy-5);ctx.lineTo(W,oy);ctx.lineTo(W-12,oy+5);ctx.fill()
+  ctx.beginPath();ctx.moveTo(ox,H);ctx.lineTo(ox,0);ctx.stroke()
+  ctx.beginPath();ctx.moveTo(ox-5,12);ctx.lineTo(ox,0);ctx.lineTo(ox+5,12);ctx.fill()
+  ctx.font='bold 11px sans-serif'; ctx.fillStyle='#475569'
+  ctx.textAlign='left';   ctx.fillText(`x (${unit.value})`,Math.min(W-44,ox+6),oy-9)
+  ctx.textAlign='center'; ctx.fillText(`y (${unit.value})`,ox+20,14)
+  ctx.textAlign='right';  ctx.font='10px monospace'; ctx.fillText('O',ox-5,oy-6)
   ctx.restore()
 }
 
-function drawShape(sh, ox, oy, scale, selected) {
-  if (sh.points.length < 2) return
-  const col = PALETTE[sh.colorIdx % PALETTE.length]
-
+function drawPoly(sh,isSelected){
+  if(isSelected===undefined)isSelected=sh.id===selectedId.value
+  const col=PALETTE[sh.colorIdx%PALETTE.length]
   ctx.save()
-
-  // Polygon fill
   ctx.beginPath()
-  sh.points.forEach((p, i) => {
-    const { x, y } = toCanvas(p, scale, ox, oy)
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-  })
+  sh.points.forEach((p,i)=>{const{x,y}=toCvs(p);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)})
   ctx.closePath()
-  ctx.fillStyle = selected ? col.fill.replace('0.10', '0.20') : col.fill
-  ctx.fill()
-  ctx.strokeStyle = col.stroke
-  ctx.lineWidth = selected ? 2.5 : 1.5
-  ctx.stroke()
-
-  // Vertices
-  sh.points.forEach((p, i) => {
-    const { x, y } = toCanvas(p, scale, ox, oy)
-    ctx.beginPath()
-    ctx.arc(x, y, selected ? 5 : 3.5, 0, Math.PI * 2)
-    ctx.fillStyle = col.dot; ctx.fill()
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke()
-
-    if (selected) {
-      ctx.fillStyle = '#1e293b'
-      ctx.font = 'bold 11px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.shadowColor = 'rgba(255,255,255,0.9)'
-      ctx.shadowBlur = 3
-      ctx.fillText(String.fromCharCode(65 + i), x + 12, y - 9)
-      ctx.shadowBlur = 0
+  ctx.fillStyle=isSelected?col.fill.replace('0.12','0.26'):col.fill; ctx.fill()
+  ctx.strokeStyle=col.stroke; ctx.lineWidth=isSelected?2.5:1.6; ctx.stroke()
+  sh.points.forEach((p,i)=>{
+    const{x,y}=toCvs(p)
+    ctx.beginPath();ctx.arc(x,y,isSelected?6:4,0,Math.PI*2)
+    ctx.fillStyle='#fff'; ctx.fill()
+    ctx.beginPath();ctx.arc(x,y,isSelected?4.5:2.8,0,Math.PI*2)
+    ctx.fillStyle=col.stroke; ctx.fill()
+    if(isSelected){
+      ctx.fillStyle='#1e293b'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center'
+      ctx.shadowColor='rgba(255,255,255,0.95)'; ctx.shadowBlur=3
+      ctx.fillText(String.fromCharCode(65+i),x+11,y-10); ctx.shadowBlur=0
     }
   })
-
-  // Center label on selected
-  if (selected) {
-    const c = centroid(sh.points)
-    const { x, y } = toCanvas(c, scale, ox, oy)
-    const def = DEFS[sh.type] ?? DEFS.polygon
-    ctx.font = 'bold 12px sans-serif'
-    ctx.fillStyle = col.stroke
-    ctx.textAlign = 'center'
-    ctx.shadowColor = 'rgba(255,255,255,0.95)'
-    ctx.shadowBlur = 5
-    ctx.fillText(def.name, x, y + 5)
-    ctx.shadowBlur = 0
+  if(isSelected){
+    const c=centroid(sh.points),{x,y}=toCvs(c)
+    ctx.font='bold 12px sans-serif'; ctx.fillStyle=col.stroke; ctx.textAlign='center'
+    ctx.shadowColor='rgba(255,255,255,0.95)'; ctx.shadowBlur=5
+    ctx.fillText((DEFS[sh.type]??DEFS.polygon).name,x,y+5); ctx.shadowBlur=0
   }
-
   ctx.restore()
 }
 
-function drawInProgress(ox, oy, scale) {
-  const pts = currentPts.value
-  if (pts.length === 0) return
+function drawCircle(sh){
+  const sel=sh.id===selectedId.value
+  const col=PALETTE[sh.colorIdx%PALETTE.length]
+  const sc=BASE_CELL*zoom.value,{x:cx,y:cy}=toCvs(sh.center),r=sh.radius*sc
   ctx.save()
-
-  // Preview fill
-  if (pts.length >= 3) {
-    ctx.beginPath()
-    pts.forEach((p, i) => {
-      const { x, y } = toCanvas(p, scale, ox, oy)
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-    })
-    ctx.closePath()
-    ctx.fillStyle = 'rgba(99,102,241,0.08)'
-    ctx.fill()
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2)
+  ctx.fillStyle=sel?col.fill.replace('0.12','0.26'):col.fill; ctx.fill()
+  ctx.strokeStyle=col.stroke; ctx.lineWidth=sel?2.5:1.6; ctx.stroke()
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill()
+  ctx.beginPath();ctx.arc(cx,cy,3.5,0,Math.PI*2);ctx.fillStyle=col.stroke;ctx.fill()
+  if(sel){
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy)
+    ctx.strokeStyle=col.stroke;ctx.lineWidth=1;ctx.setLineDash([4,2]);ctx.stroke();ctx.setLineDash([])
+    ctx.font='bold 12px sans-serif';ctx.fillStyle=col.stroke;ctx.textAlign='center'
+    ctx.shadowColor='rgba(255,255,255,0.95)';ctx.shadowBlur=5
+    ctx.fillText('Círculo',cx,cy-r-10)
+    ctx.font='10px monospace';ctx.fillText(`r=${fv(sh.radius)} ${unit.value}`,cx+r/2+8,cy-7)
+    ctx.shadowBlur=0
   }
-
-  // Dashed lines
-  ctx.strokeStyle = '#6366f1'
-  ctx.lineWidth = 1.5
-  ctx.setLineDash([6, 3])
-  ctx.beginPath()
-  pts.forEach((p, i) => {
-    const { x, y } = toCanvas(p, scale, ox, oy)
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-  })
-  if (mouseCanvasPt.value) ctx.lineTo(mouseCanvasPt.value.x, mouseCanvasPt.value.y)
-  ctx.stroke()
-  ctx.setLineDash([])
-
-  // Points
-  pts.forEach((p, i) => {
-    const { x, y } = toCanvas(p, scale, ox, oy)
-    const isFirst = i === 0
-    ctx.beginPath()
-    ctx.arc(x, y, isFirst ? 7 : 4, 0, Math.PI * 2)
-    ctx.fillStyle = isFirst ? '#4f46e5' : '#6366f1'
-    ctx.fill()
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke()
-
-    // Snap ring on first point
-    if (isFirst && nearFirst.value && pts.length >= 3) {
-      ctx.beginPath()
-      ctx.arc(x, y, 13, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(34,197,94,0.7)'
-      ctx.lineWidth = 2
-      ctx.stroke()
-    }
-  })
   ctx.restore()
 }
 
-// ── Event handlers ────────────────────────────────────────────────────
-function canvasCoords(e) {
-  const rect = canvasEl.value.getBoundingClientRect()
-  return { cx: e.clientX - rect.left, cy: e.clientY - rect.top }
+function drawInProgress(){
+  const pts=currentPts.value
+  if(tool.value==='polygon'&&pts.length>0){
+    ctx.save()
+    if(pts.length>=3){
+      ctx.beginPath(); pts.forEach((p,i)=>{const{x,y}=toCvs(p);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)})
+      ctx.closePath(); ctx.fillStyle='rgba(99,102,241,0.07)'; ctx.fill()
+    }
+    ctx.strokeStyle='#6366f1';ctx.lineWidth=1.5;ctx.setLineDash([6,3])
+    ctx.beginPath(); pts.forEach((p,i)=>{const{x,y}=toCvs(p);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)})
+    if(mousePx.value)ctx.lineTo(mousePx.value.x,mousePx.value.y)
+    ctx.stroke();ctx.setLineDash([])
+    pts.forEach((p,i)=>{
+      const{x,y}=toCvs(p),first=(i===0)
+      ctx.beginPath();ctx.arc(x,y,first?8:4.5,0,Math.PI*2);ctx.fillStyle=first?'#4f46e5':'#6366f1';ctx.fill()
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()
+      if(first&&nearFirst.value&&pts.length>=3){
+        ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*2)
+        ctx.strokeStyle='rgba(34,197,94,0.8)';ctx.lineWidth=2;ctx.stroke()
+      }
+    })
+    ctx.restore()
+  }
+  if(tool.value==='circle'){
+    if(circleCenter.value){
+      const{x:cx,y:cy}=toCvs(circleCenter.value)
+      ctx.save()
+      ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fillStyle='#14b8a6';ctx.fill()
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()
+      if(mousePx.value){
+        const r=dist(mousePx.value,{x:cx,y:cy})
+        if(r>1){
+          ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2)
+          ctx.fillStyle='rgba(20,184,166,0.07)';ctx.fill()
+          ctx.strokeStyle='rgba(20,184,166,0.75)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([])
+          ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(mousePx.value.x,mousePx.value.y)
+          ctx.strokeStyle='rgba(20,184,166,0.5)';ctx.lineWidth=1;ctx.stroke()
+        }
+      }
+      ctx.restore()
+    } else if(mousePx.value){
+      ctx.save();ctx.beginPath();ctx.arc(mousePx.value.x,mousePx.value.y,5,0,Math.PI*2)
+      ctx.fillStyle='rgba(20,184,166,0.45)';ctx.fill();ctx.restore()
+    }
+  }
 }
 
-function onCanvasClick(e) {
-  if (!canvasEl.value) return
-  const { cx, cy } = canvasCoords(e)
-  const scale = BASE_CELL * zoom.value
-  const W = canvasEl.value.width, H = canvasEl.value.height
-  const ox = W / 2, oy = H / 2
-  const rawPt = toCart(cx, cy, scale, ox, oy)
-  const cartPt = { x: snap(rawPt.x), y: snap(rawPt.y) }
+// ── Click handler (shared mouse + touch) ──────────────────────────────
+function handleClick(cx,cy){
+  const raw=toCart2(cx,cy)
+  const pt={x:snap(raw.x),y:snap(raw.y)}
 
-  // 1. Check existing shapes (topmost first)
-  for (let i = shapes.value.length - 1; i >= 0; i--) {
-    if (pointInPoly(rawPt, shapes.value[i].points)) {
-      selectedId.value = shapes.value[i].id
-      infoTab.value = 'calc'
-      draw()
-      return
-    }
+  // Hit existing shapes (topmost first)
+  for(let i=shapes.value.length-1;i>=0;i--){
+    const sh=shapes.value[i]
+    const hit=sh.shapeType==='circle'?dist(raw,sh.center)<=sh.radius:ptInPoly(raw,sh.points)
+    if(hit){selectedId.value=sh.id;tab.value='calc';draw();return}
   }
 
-  // 2. Check close polygon
-  if (currentPts.value.length >= 3) {
-    const fp = currentPts.value[0]
-    const { x: fpx, y: fpy } = toCanvas(fp, scale, ox, oy)
-    if (Math.hypot(cx - fpx, cy - fpy) < CLOSE_DIST) {
-      closeShape()
-      return
-    }
+  // Deselect on empty tap
+  if(selectedId.value&&!isDrawing.value){selectedId.value=null}
+
+  // Circle tool
+  if(tool.value==='circle'){
+    if(!circleCenter.value){circleCenter.value=pt}
+    else{if(previewR.value>0.05)finishCircle(previewR.value);else circleCenter.value=null}
+    draw();return
   }
 
-  // 3. Deselect if starting fresh draw
-  if (selectedId.value !== null && currentPts.value.length === 0) selectedId.value = null
+  // Polygon tool
+  if(tool.value==='polygon'){
+    if(currentPts.value.length>=3){
+      const{x:fpx,y:fpy}=toCvs(currentPts.value[0])
+      if(Math.hypot(cx-fpx,cy-fpy)<CLOSE_DIST){closePoly();return}
+    }
+    currentPts.value.push(pt);draw()
+  }
+}
 
-  // 4. Add point
-  currentPts.value.push(cartPt)
+// ── Mouse events ───────────────────────────────────────────────────────
+function onMouseDown(e){
+  mouseDownDragged=false
+  if(tool.value==='pan'){
+    panning.value=true
+    panOrigin.value={x:e.clientX,y:e.clientY,px:panX.value,py:panY.value}
+  }
+}
+function onMouseUp(){ panning.value=false;panOrigin.value=null }
+
+function onCanvasClick(e){
+  if(mouseDownDragged){mouseDownDragged=false;return}
+  const rect=canvasEl.value.getBoundingClientRect()
+  handleClick(e.clientX-rect.left,e.clientY-rect.top)
+}
+
+function updateMouse(cx,cy){
+  const sc=BASE_CELL*zoom.value,raw=toCart2(cx,cy)
+  mouseCart.value={x:Math.round(raw.x*10)/10,y:Math.round(raw.y*10)/10}
+  mousePx.value={x:cx,y:cy}
+  if(currentPts.value.length>=3){
+    const{x:fpx,y:fpy}=toCvs(currentPts.value[0])
+    nearFirst.value=Math.hypot(cx-fpx,cy-fpy)<CLOSE_DIST
+  }else nearFirst.value=false
+  if(tool.value==='circle'&&circleCenter.value){
+    const{x:ccx,y:ccy}=toCvs(circleCenter.value)
+    previewR.value=dist({x:cx,y:cy},{x:ccx,y:ccy})/sc
+  }
+  hoverShape.value=shapes.value.some(sh=>sh.shapeType==='circle'?dist(raw,sh.center)<=sh.radius:ptInPoly(raw,sh.points))
   draw()
 }
 
-function onMouseMove(e) {
-  if (!canvasEl.value) return
-  const { cx, cy } = canvasCoords(e)
-  const scale = BASE_CELL * zoom.value
-  const W = canvasEl.value.width, H = canvasEl.value.height
-  const ox = W / 2, oy = H / 2
-  const raw = toCart(cx, cy, scale, ox, oy)
+function onMouseMove(e){
+  if(panning.value&&panOrigin.value&&tool.value==='pan'){
+    const dx=e.clientX-panOrigin.value.x,dy=e.clientY-panOrigin.value.y
+    if(Math.hypot(dx,dy)>4)mouseDownDragged=true
+    panX.value=panOrigin.value.px+dx; panY.value=panOrigin.value.py+dy; draw();return
+  }
+  const rect=canvasEl.value.getBoundingClientRect()
+  updateMouse(e.clientX-rect.left,e.clientY-rect.top)
+}
 
-  mouseCart.value     = { x: Math.round(raw.x * 10) / 10, y: Math.round(raw.y * 10) / 10 }
-  mouseCanvasPt.value = { x: cx, y: cy }
+function onMouseLeave(){mouseCart.value=null;mousePx.value=null;nearFirst.value=false;hoverShape.value=false;draw()}
 
-  // Near first point?
-  if (currentPts.value.length >= 3) {
-    const fp = currentPts.value[0]
-    const { x: fpx, y: fpy } = toCanvas(fp, scale, ox, oy)
-    nearFirst.value = Math.hypot(cx - fpx, cy - fpy) < CLOSE_DIST
+function onWheel(e){
+  const delta=e.deltaY>0?-ZOOM_STEP:ZOOM_STEP
+  const nz=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,+(zoom.value+delta).toFixed(2)))
+  if(nz===zoom.value)return
+  const rect=canvasEl.value.getBoundingClientRect()
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top
+  const W=canvasEl.value.width,H=canvasEl.value.height
+  const ratio=nz/zoom.value
+  panX.value=mx-(mx-W/2-panX.value)*ratio-W/2
+  panY.value=my+(H/2+panY.value-my)*ratio-H/2
+  zoom.value=nz; draw()
+}
+
+// ── Touch events ───────────────────────────────────────────────────────
+function onTouchStart(e){
+  touchMoved=false
+  if(e.touches.length>=2){
+    twoFinger=true; panning.value=false
+    const t0=e.touches[0],t1=e.touches[1]
+    lastTouchDist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY)
+    lastTouchMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2}
+    return
+  }
+  twoFinger=false
+  if(tool.value==='pan'){
+    panning.value=true
+    panOrigin.value={x:e.touches[0].clientX,y:e.touches[0].clientY,px:panX.value,py:panY.value}
   } else {
-    nearFirst.value = false
+    const rect=canvasEl.value.getBoundingClientRect()
+    updateMouse(e.touches[0].clientX-rect.left,e.touches[0].clientY-rect.top)
   }
-
-  // Hovering any saved shape?
-  hoveringShape.value = shapes.value.some(sh => pointInPoly(raw, sh.points))
-
-  draw()
 }
 
-function onMouseLeave() {
-  mouseCart.value     = null
-  mouseCanvasPt.value = null
-  nearFirst.value     = false
-  hoveringShape.value = false
-  draw()
-}
-
-// ── Shape actions ─────────────────────────────────────────────────────
-function closeShape() {
-  if (currentPts.value.length < 3) return
-  const pts = [...currentPts.value]
-  const type = classifyShape(pts)
-  const sideLengths = computeSides(pts)
-  const shape = {
-    id: ++idCounter,
-    points: pts,
-    type,
-    sideLengths,
-    area: shoelaceArea(pts),
-    perimeter: sideLengths.reduce((a, b) => a + b, 0),
-    colorIdx: shapes.value.length,
+function onTouchMove(e){
+  e.preventDefault(); touchMoved=true
+  if(e.touches.length>=2){
+    twoFinger=true
+    const t0=e.touches[0],t1=e.touches[1]
+    const newDist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY)
+    const mid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2}
+    // Pan from pinch center
+    if(lastTouchMid){panX.value+=mid.x-lastTouchMid.x;panY.value+=mid.y-lastTouchMid.y}
+    // Zoom from pinch distance
+    if(lastTouchDist>0){
+      const ratio=newDist/lastTouchDist
+      const nz=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,+(zoom.value*ratio).toFixed(3)))
+      const rect=canvasEl.value.getBoundingClientRect()
+      const mx=mid.x-rect.left,my=mid.y-rect.top
+      const W=canvasEl.value.width,H=canvasEl.value.height
+      const r2=nz/zoom.value
+      panX.value=mx-(mx-W/2-panX.value)*r2-W/2
+      panY.value=my+(H/2+panY.value-my)*r2-H/2
+      zoom.value=nz
+    }
+    lastTouchDist=newDist; lastTouchMid=mid; draw();return
   }
-  shapes.value.push(shape)
-  selectedId.value = shape.id
-  currentPts.value = []
-  nearFirst.value  = false
-  infoTab.value    = 'calc'
-  draw()
+  if(tool.value==='pan'&&panning.value&&panOrigin.value){
+    panX.value=panOrigin.value.px+(e.touches[0].clientX-panOrigin.value.x)
+    panY.value=panOrigin.value.py+(e.touches[0].clientY-panOrigin.value.y)
+    draw();return
+  }
+  const rect=canvasEl.value.getBoundingClientRect()
+  updateMouse(e.touches[0].clientX-rect.left,e.touches[0].clientY-rect.top)
 }
 
-function saveShape()    { closeShape() }
-function cancelCurrent(){ currentPts.value = []; nearFirst.value = false; draw() }
-function undoLastPt()   { currentPts.value.pop(); draw() }
-function clearAll()     { shapes.value = []; currentPts.value = []; selectedId.value = null; draw() }
-function zoomIn()       { if (zoom.value < MAX_ZOOM) { zoom.value = Math.min(MAX_ZOOM, +(zoom.value + ZOOM_STEP).toFixed(2)); draw() } }
-function zoomOut()      { if (zoom.value > MIN_ZOOM) { zoom.value = Math.max(MIN_ZOOM, +(zoom.value - ZOOM_STEP).toFixed(2)); draw() } }
-
-// ── Formatting helpers ────────────────────────────────────────────────
-function fmtVal(v) {
-  if (v == null || isNaN(v)) return '—'
-  if (Math.abs(v) < 0.005) return '0'
-  if (Math.abs(v) >= 1000)  return Math.round(v).toString()
-  return (Math.round(v * 100) / 100).toString()
+function onTouchEnd(e){
+  panning.value=false
+  if(twoFinger&&e.touches.length===0){twoFinger=false;lastTouchDist=0;lastTouchMid=null;return}
+  if(e.touches.length<2){twoFinger=false;lastTouchDist=0;lastTouchMid=null}
+  if(!touchMoved&&e.changedTouches.length===1){
+    const rect=canvasEl.value.getBoundingClientRect(),t=e.changedTouches[0]
+    handleClick(t.clientX-rect.left,t.clientY-rect.top)
+  }
 }
 
-function fmtCoord(v) {
-  return (Math.round(v * 10) / 10).toString()
+// ── Shape actions ──────────────────────────────────────────────────────
+function closePoly(){
+  if(currentPts.value.length<3)return
+  const pts=[...currentPts.value],type=classify(pts),sl=sides(pts)
+  shapes.value.push({
+    id:++idCtr, shapeType:'polygon', points:pts, type, sideLengths:sl,
+    area:shoelace(pts), perimeter:sl.reduce((a,b)=>a+b,0),
+    colorIdx:shapes.value.length%PALETTE.length,
+  })
+  selectedId.value=idCtr; currentPts.value=[]; nearFirst.value=false; tab.value='calc'; draw()
 }
 
-function sideLabel(i, n) {
-  return `${String.fromCharCode(65 + i)}${String.fromCharCode(65 + (i + 1) % n)}`
+function finishCircle(r){
+  shapes.value.push({
+    id:++idCtr, shapeType:'circle', center:{...circleCenter.value}, radius:r, type:'circle',
+    sideLengths:[r], area:Math.PI*r*r, perimeter:2*Math.PI*r,
+    colorIdx:shapes.value.length%PALETTE.length,
+  })
+  selectedId.value=idCtr; circleCenter.value=null; previewR.value=0; tab.value='calc'; draw()
 }
 
-// ── Canvas sizing ─────────────────────────────────────────────────────
-function resizeCanvas() {
-  if (!canvasEl.value || !canvasWrapper.value) return
-  canvasEl.value.width  = canvasWrapper.value.clientWidth
-  canvasEl.value.height = canvasWrapper.value.clientHeight
+function saveShape(){
+  if(tool.value==='polygon'&&currentPts.value.length>=3)closePoly()
+  else if(tool.value==='circle'&&circleCenter.value&&previewR.value>0.05)finishCircle(previewR.value)
 }
 
-// ── Lifecycle ─────────────────────────────────────────────────────────
-onMounted(async () => {
+function cancelCurrent(){currentPts.value=[];circleCenter.value=null;previewR.value=0;nearFirst.value=false;draw()}
+function undoLastPt(){if(currentPts.value.length)currentPts.value.pop();draw()}
+function deleteSelected(){
+  if(!selectedId.value)return
+  shapes.value=shapes.value.filter(s=>s.id!==selectedId.value)
+  selectedId.value=null; draw()
+}
+function setShapeColor(idx){
+  if(!activeShape.value)return
+  const sh=shapes.value.find(s=>s.id===selectedId.value)
+  if(sh){sh.colorIdx=idx;draw()}
+}
+function resetView(){panX.value=0;panY.value=0;zoom.value=1;draw()}
+function zoomIn(){if(zoom.value<MAX_ZOOM){zoom.value=+(Math.min(MAX_ZOOM,zoom.value+ZOOM_STEP)).toFixed(2);draw()}}
+function zoomOut(){if(zoom.value>MIN_ZOOM){zoom.value=+(Math.max(MIN_ZOOM,zoom.value-ZOOM_STEP)).toFixed(2);draw()}}
+
+// ── Format helpers ─────────────────────────────────────────────────────
+const fv=v=>v==null||isNaN(v)?'—':Math.abs(v)<0.005?'0':Math.abs(v)>=1000?Math.round(v).toString():(Math.round(v*100)/100).toString()
+const fc=v=>(Math.round(v*10)/10).toString()
+const sideLabel=(i,n)=>`${String.fromCharCode(65+i)}${String.fromCharCode(65+(i+1)%n)}`
+
+// ── Canvas resize ──────────────────────────────────────────────────────
+function resize(){
+  if(!canvasEl.value||!canvasWrapper.value)return
+  canvasEl.value.width=canvasWrapper.value.clientWidth
+  canvasEl.value.height=canvasWrapper.value.clientHeight
+}
+
+// ── Lifecycle ──────────────────────────────────────────────────────────
+onMounted(async()=>{
   await nextTick()
-  ctx = canvasEl.value.getContext('2d')
-  resizeCanvas()
-  draw()
-
-  ro = new ResizeObserver(() => { resizeCanvas(); draw() })
+  ctx=canvasEl.value.getContext('2d')
+  resize(); draw()
+  const ro=new ResizeObserver(()=>{resize();draw()})
   ro.observe(canvasWrapper.value)
 
-  const onKey = (e) => {
-    if (e.key === 'Escape')                                { cancelCurrent() }
-    if (e.key === 'Backspace' && currentPts.value.length)  { e.preventDefault(); undoLastPt() }
-    if (e.key === 'Enter'     && currentPts.value.length >= 3) { closeShape() }
-    if (e.key === '+' || e.key === '=')                    { zoomIn() }
-    if (e.key === '-')                                     { zoomOut() }
+  const onUp=()=>{panning.value=false;panOrigin.value=null}
+  window.addEventListener('mouseup',onUp)
+
+  const onKey=e=>{
+    if(e.key==='Escape')cancelCurrent()
+    if(e.key==='Backspace'&&currentPts.value.length){e.preventDefault();undoLastPt()}
+    if(e.key==='Enter'&&currentPts.value.length>=3)closePoly()
+    if((e.key==='Delete'||e.key==='Backspace')&&selectedId.value&&!isDrawing.value)deleteSelected()
+    if(e.key==='+'||e.key==='=')zoomIn()
+    if(e.key==='-')zoomOut()
   }
-  window.addEventListener('keydown', onKey)
-  onUnmounted(() => window.removeEventListener('keydown', onKey))
+  window.addEventListener('keydown',onKey)
+
+  onUnmounted(()=>{
+    window.removeEventListener('mouseup',onUp)
+    window.removeEventListener('keydown',onKey)
+    ro.disconnect()
+  })
 })
 
-onUnmounted(() => { if (ro) ro.disconnect() })
-watch(unit, () => draw())
+watch(unit,()=>draw())
+watch(selectedId,v=>{if(v)tab.value='calc'})
 </script>
+
 
 <!-- ================================================================
      STYLES
 ================================================================ -->
 <style scoped>
-/* ── Google Fonts (monospace + sans) ───────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap');
 
-/* ── Layout skeleton ───────────────────────────────────────────────── */
+/* ── Root ──────────────────────────────────────────────────────────── */
 .geo-ova {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: calc(100vh - 64px);
-  font-family: 'DM Sans', sans-serif;
-  background: #f1f5f9;
-  overflow: hidden;
+  display: flex; flex-direction: column;
+  height: 100%; min-height: calc(100dvh - 64px);
+  font-family: 'Sora', sans-serif;
+  background: #f1f5f9; overflow: hidden;
 }
-
-.main-layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
+.font-mono { font-family: 'JetBrains Mono', monospace !important; }
 
 /* ── Toolbar ───────────────────────────────────────────────────────── */
 .geo-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  height: 52px;
-  background: #fff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  flex-shrink: 0;
-  z-index: 10;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 12px; height: 52px;
+  background: #fff; border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  flex-shrink: 0; z-index: 10;
+  overflow-x: auto; scrollbar-width: none;
+}
+.geo-toolbar::-webkit-scrollbar { display: none; }
+
+.tb-brand  { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.brand-icon{
+  width:30px; height:30px; border-radius:8px;
+  background:rgba(99,102,241,0.08);
+  display:flex; align-items:center; justify-content:center; color:#6366f1; flex-shrink:0;
+}
+.brand-name { font-weight:700; font-size:14px; color:#1e293b; letter-spacing:-0.3px; white-space:nowrap; }
+
+.tb-tools  { flex-shrink: 0; }
+.tb-divider{ width:1px; height:22px; background:#e2e8f0; flex-shrink:0; }
+
+.zoom-badge{
+  min-width:44px; text-align:center; font-size:11px; font-weight:600; color:#475569;
+  background:#f1f5f9; border-radius:6px; padding:2px 5px; flex-shrink:0;
 }
 
-.tb-brand   { display: flex; align-items: center; flex-shrink: 0; }
-.tb-center  { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
-.tb-right   { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.tb-divider { width: 1px; height: 22px; background: #e2e8f0; margin: 0 4px; }
+.unit-wrap  { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.unit-label { font-size:12px; color:#64748b; font-weight:500; }
+.unit-btn   { min-width:34px !important; font-size:11px !important; font-weight:700 !important; }
+.save-btn   { font-weight:600 !important; flex-shrink:0; }
 
-.brand-icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px;
-  background: rgba(99,102,241,0.08);
-  border-radius: 8px;
-  margin-right: 8px;
-  color: #6366f1;
-}
-
-.brand-name {
-  font-weight: 700;
-  font-size: 15px;
-  color: #1e293b;
-  letter-spacing: -0.3px;
-}
-
-.zoom-badge {
-  min-width: 48px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: #475569;
-  background: #f1f5f9;
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.unit-toggle-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.unit-label { font-size: 12px; color: #64748b; font-weight: 500; }
-.unit-btn   { min-width: 36px !important; font-size: 11px !important; font-weight: 600 !important; }
-
-.save-btn { font-weight: 600 !important; letter-spacing: 0 !important; }
+/* ── Layout ────────────────────────────────────────────────────────── */
+.main-layout { display:flex; flex:1; overflow:hidden; position:relative; }
 
 /* ── Canvas ────────────────────────────────────────────────────────── */
-.canvas-area {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: #f8fafc;
-}
+.canvas-area { flex:1; position:relative; overflow:hidden; background:#f8fafc; min-width:0; }
+.geo-canvas  { display:block; width:100%; height:100%; touch-action:none; }
+.cur-crosshair { cursor:crosshair; }
+.cur-pointer   { cursor:pointer;   }
+.cur-grab      { cursor:grab;      }
+.cur-grabbing  { cursor:grabbing;  }
 
-.geo-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.cursor-crosshair { cursor: crosshair; }
-.cursor-pointer   { cursor: pointer; }
-
-/* ── HUD overlays ──────────────────────────────────────────────────── */
-.hud { position: absolute; pointer-events: none; }
-.hud-bl { bottom: 14px; left: 14px; }
-.hud-br { bottom: 14px; right: 14px; }
-.hud-tc { top: 14px; left: 50%; transform: translateX(-50%); }
-.hud-tl { top: 14px; left: 14px; }
+/* ── HUD ───────────────────────────────────────────────────────────── */
+.hud    { position:absolute; pointer-events:none; z-index:5; }
+.hud-bl { bottom:14px; left:14px; }
+.hud-br { bottom:14px; right:14px; }
+.hud-tc { top:14px; left:50%; transform:translateX(-50%); }
+.hud-tl { top:14px; left:14px; }
 
 .hud-pill {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(8px);
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 11.5px;
-  color: #475569;
-  font-weight: 500;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  white-space: nowrap;
+  display:inline-flex; align-items:center;
+  background:rgba(255,255,255,0.93); backdrop-filter:blur(8px);
+  border:1px solid #e2e8f0; border-radius:20px;
+  padding:5px 12px; font-size:11.5px; color:#475569; font-weight:500;
+  box-shadow:0 1px 5px rgba(0,0,0,0.08); white-space:nowrap;
 }
+.hud-green { background:rgba(240,253,244,0.95); border-color:#86efac; color:#15803d; }
+.hud-teal  { background:rgba(240,253,250,0.95); border-color:#5eead4; color:#0f766e; }
 
-.hud-success {
-  background: rgba(240,253,244,0.95);
-  border-color: #86efac;
-  color: #15803d;
-}
-
-.font-mono { font-family: 'JetBrains Mono', monospace !important; }
-
-/* ── Info Panel ────────────────────────────────────────────────────── */
+/* ── Info panel ────────────────────────────────────────────────────── */
 .info-panel {
-  width: 340px;
-  min-width: 300px;
-  background: #fff;
-  border-left: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  flex-shrink: 0;
+  width: 340px; min-width: 300px;
+  background: #fff; border-left: 1px solid #e2e8f0;
+  display: flex; flex-direction: column;
+  overflow: hidden; flex-shrink: 0;
 }
 
-/* ── Panel header (active shape) ───────────────────────────────────── */
+/* ── MOBILE: bottom sheet ──────────────────────────────────────────── */
+@media (max-width: 959px) {
+  .main-layout { flex-direction: column; }
+  .canvas-area { flex: 1; min-height: 52dvh; }
+
+  .info-panel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    width: 100%; min-width: unset; max-height: 65dvh;
+    border-radius: 20px 20px 0 0;
+    border-left: none; border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.13);
+    transform: translateY(calc(100% + 4px));
+    transition: transform 0.34s cubic-bezier(0.34, 1.38, 0.64, 1);
+    z-index: 200; overflow-y: auto;
+  }
+  .info-panel.panel-open { transform: translateY(0); }
+}
+
+/* ── Drag handle ───────────────────────────────────────────────────── */
+.drag-handle { display:flex; justify-content:center; padding:10px 0 4px; cursor:pointer; flex-shrink:0; }
+.drag-bar    { width:40px; height:4px; background:#cbd5e1; border-radius:2px; }
+
+/* ── Panel header ──────────────────────────────────────────────────── */
 .panel-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px 10px;
-  background: #fff;
+  display:flex; align-items:center; gap:8px;
+  padding:12px 14px 8px; flex-shrink:0;
 }
 
-.shape-icon-wrap {
-  width: 42px; height: 42px;
-  border-radius: 12px;
+/* ── Color dot button ──────────────────────────────────────────────── */
+.color-dot-btn {
+  width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  cursor: pointer; flex-shrink: 0;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(0,0,0,0.12);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.color-dot-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0,0,0,0.22);
 }
 
-.panel-shape-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1e293b;
-  letter-spacing: -0.3px;
+/* ── Color picker menu ─────────────────────────────────────────────── */
+.color-picker-card { min-width: 208px !important; }
+.picker-title { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; }
+.color-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px;
+}
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 0 0 2px transparent;
+}
+.color-swatch:hover { transform: scale(1.18); }
+.swatch-active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0,0,0,0.25);
+  transform: scale(1.12);
 }
 
-.panel-shape-sub {
-  font-size: 11.5px;
-  color: #64748b;
-  margin-top: 1px;
-}
+.panel-title-block { min-width:0; }
+.panel-name { font-size:15px; font-weight:700; color:#1e293b; letter-spacing:-0.2px; }
+.panel-sub  { font-size:11px; color:#64748b; margin-top:1px; }
 
-.formula-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 0 16px 12px;
-}
+.formula-row { display:flex; flex-wrap:wrap; gap:5px; padding:0 14px 9px; flex-shrink:0; }
+.chip-formula { font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500; padding:3px 9px; border-radius:6px; }
+.chip-a { background:rgba(99,102,241,0.08); color:#4f46e5; }
+.chip-p { background:rgba(20,184,166,0.08); color:#0d9488; }
 
-.formula-chip {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 6px;
-}
+.info-tabs  { flex-shrink:0; }
+.tab-sep    { height:1px; background:#f1f5f9; flex-shrink:0; }
 
-.primary-formula   { background: rgba(99,102,241,0.08); color: #4f46e5; }
-.secondary-formula { background: rgba(20,184,166,0.08); color: #0d9488; }
-
-/* ── Tabs ──────────────────────────────────────────────────────────── */
-.info-tabs  { flex-shrink: 0; border-bottom: none; }
-.tab-item   { font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; min-width: 0 !important; }
-.tab-divider { height: 1px; background: #e2e8f0; }
-
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
-}
+.panel-body { flex:1; overflow-y:auto; }
+.panel-body::-webkit-scrollbar { width:3px; }
+.panel-body::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
 
 /* ── Tab content ───────────────────────────────────────────────────── */
-.tab-content {
-  padding: 14px 16px;
+.tab-content { padding:12px 14px 20px; }
+
+.sec-title {
+  display:flex; align-items:center;
+  font-size:10.5px; font-weight:700; letter-spacing:.5px;
+  text-transform:uppercase; color:#94a3b8; margin-bottom:8px;
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin-bottom: 8px;
-}
+.sides-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.side-item  { display:flex; align-items:center; justify-content:space-between;
+              background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:5px 9px; }
+.side-name  { font-size:11px; font-weight:700; color:#64748b; }
+.side-val   { font-size:11px; font-weight:500; color:#1e293b; }
 
-/* ── Sides grid ────────────────────────────────────────────────────── */
-.sides-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
+.sep { height:1px; background:#f1f5f9; margin:10px 0; }
 
-.side-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 6px 10px;
-}
+.res-card   { border-radius:10px; padding:9px 11px; margin-bottom:7px; border:1px solid transparent; }
+.res-meta   { display:flex; align-items:center; margin-bottom:4px; }
+.res-label  { display:flex; align-items:center; font-size:10px; font-weight:700; letter-spacing:.4px; }
+.res-formula{ font-size:10px; color:#94a3b8; margin-left:auto; font-family:'JetBrains Mono',monospace; }
+.res-number { display:flex; align-items:baseline; gap:3px; }
+.res-val    { font-size:22px; font-weight:700; font-family:'JetBrains Mono',monospace; line-height:1; }
+.res-unit   { font-size:12px; color:#64748b; font-weight:500; }
 
-.side-name { font-size: 11.5px; font-weight: 700; color: #475569; }
-.side-val  { font-size: 11.5px; font-weight: 500; color: #1e293b; }
+.coords-list { display:flex; flex-direction:column; gap:4px; }
+.coord-row   { display:flex; align-items:center; gap:8px;
+               background:#f8fafc; border-radius:6px; padding:5px 9px; }
+.coord-dot   { width:20px; height:20px; border-radius:50%;
+               color:#fff; font-size:9.5px; font-weight:700;
+               display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.coord-val   { font-size:11.5px; color:#1e293b; font-weight:500; }
 
-/* ── Result cards ──────────────────────────────────────────────────── */
-.result-divider { height: 1px; background: #f1f5f9; margin: 12px 0; }
+.props-list { display:flex; flex-direction:column; gap:6px; }
+.prop-row   { display:flex; align-items:flex-start; }
+.prop-text  { font-size:12.5px; color:#374151; line-height:1.45; }
+.mt-0-5     { margin-top:2px; }
 
-.result-card {
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-}
+.types-list { display:flex; flex-direction:column; gap:6px; }
+.type-row   { display:flex; align-items:center; flex-wrap:wrap; gap:5px; }
+.type-desc  { font-size:12px; color:#64748b; }
 
-.result-area  { background: rgba(99,102,241,0.05);  border: 1px solid rgba(99,102,241,0.15); }
-.result-perim { background: rgba(20,184,166,0.05);  border: 1px solid rgba(20,184,166,0.15); }
+.curiosity-card   { background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:11px; }
+.curiosity-title  { display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700;
+                    color:#92400e; margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
+.curiosity-text   { font-size:12px; color:#78350f; line-height:1.55; margin:0; }
 
-.result-meta   { display: flex; align-items: center; margin-bottom: 4px; }
-.result-label  { display: flex; align-items: center; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; }
-.result-formula{ font-size: 10.5px; color: #94a3b8; margin-left: auto; }
-
-.result-number { display: flex; align-items: baseline; gap: 3px; }
-.result-val    { font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-.result-unit   { font-size: 12px; font-weight: 500; color: #64748b; }
-
-/* ── Coordinates ───────────────────────────────────────────────────── */
-.coords-list { display: flex; flex-direction: column; gap: 4px; }
-.coord-row   { display: flex; align-items: center; gap: 10px; background: #f8fafc; border-radius: 6px; padding: 5px 10px; }
-.coord-letter{ width: 18px; height: 18px; border-radius: 50%; background: #6366f1; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.coord-val   { font-size: 12px; color: #1e293b; font-weight: 500; }
-
-/* ── Properties tab ────────────────────────────────────────────────── */
-.props-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
-.prop-row   { display: flex; align-items: flex-start; gap: 6px; }
-.prop-text  { font-size: 13px; color: #374151; line-height: 1.45; }
-
-.types-list { display: flex; flex-direction: column; gap: 7px; }
-.type-row   { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-.type-desc  { font-size: 12px; color: #64748b; }
-
-.curiosity-card   { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; }
-.curiosity-label  { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
-.curiosity-text   { font-size: 12.5px; color: #78350f; line-height: 1.55; margin: 0; }
-
-/* ── Example steps ─────────────────────────────────────────────────── */
-.steps-list { display: flex; flex-direction: column; gap: 2px; }
-
-.step-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 10px;
-  border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.step-num {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: #6366f1;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.step-body   { flex: 1; min-width: 0; }
-.step-title  { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 4px; }
-.step-content { font-size: 13px; color: #1e293b; line-height: 1.5; }
-
-/* Highlight in example steps */
-:deep(.result-hl) {
-  color: #4f46e5;
-  background: rgba(99,102,241,0.08);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
+.steps-list { display:flex; flex-direction:column; gap:6px; }
+.step-row   { display:flex; gap:10px; align-items:flex-start;
+              padding:10px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; }
+.step-num   { width:22px; height:22px; border-radius:50%; color:#fff; font-size:11px; font-weight:700;
+              display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.step-body  { flex:1; min-width:0; }
+.step-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#94a3b8; margin-bottom:3px; }
+.step-content { font-size:12.5px; color:#1e293b; line-height:1.5; }
+:deep(.hl)  { color:#4f46e5; background:rgba(99,102,241,0.09); padding:1px 5px; border-radius:4px; }
 
 /* ── Empty panel ───────────────────────────────────────────────────── */
 .empty-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 28px 20px;
-  height: 100%;
-  overflow-y: auto;
+  display:flex; flex-direction:column; align-items:center;
+  padding:24px 18px; text-align:center; height:100%; overflow-y:auto;
 }
+.empty-svg   { margin-bottom:14px; opacity:.88; }
+.empty-title { font-size:15px; font-weight:700; color:#1e293b; margin:0 0 6px; }
+.empty-desc  { font-size:12.5px; color:#64748b; line-height:1.55; margin:0 0 16px; }
 
-.empty-icon  { margin-bottom: 16px; opacity: 0.85; }
-.empty-title { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 6px; }
-.empty-desc  { font-size: 13px; color: #64748b; text-align: center; line-height: 1.55; margin: 0 0 20px; }
-
-.hint-list { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-.hint-row  { display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; color: #374151; line-height: 1.45; }
-.hint-icon { flex-shrink: 0; margin-top: 1px; }
-
-.shortcuts-card  { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
-.shortcuts-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; }
-.shortcut-row    { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; color: #475569; }
-.shortcut-row:last-child { margin-bottom: 0; }
+.hint-list { width:100%; display:flex; flex-direction:column; gap:8px; text-align:left; }
+.hint-row  { display:flex; align-items:flex-start; gap:9px; font-size:12px; color:#374151; line-height:1.45; }
 
 kbd {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  background: #fff;
-  border: 1px solid #cbd5e1;
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  padding: 1px 6px;
-  color: #1e293b;
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  background:#fff; border:1px solid #cbd5e1; border-bottom-width:2px;
+  border-radius:4px; padding:1px 5px; color:#1e293b;
 }
 
 /* ── Transitions ───────────────────────────────────────────────────── */
-.fade-hud-enter-active,
-.fade-hud-leave-active { transition: opacity 0.2s ease; }
-.fade-hud-enter-from,
-.fade-hud-leave-to     { opacity: 0; }
-
-/* ── Scrollbar ─────────────────────────────────────────────────────── */
-.panel-body::-webkit-scrollbar,
-.empty-panel::-webkit-scrollbar { width: 4px; }
-.panel-body::-webkit-scrollbar-thumb,
-.empty-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-/* ── Responsive ────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .main-layout   { flex-direction: column; }
-  .canvas-area   { min-height: 55vh; }
-  .info-panel    { width: 100%; min-width: unset; border-left: none; border-top: 1px solid #e2e8f0; max-height: 45vh; }
-  .tb-center     { gap: 2px; }
-  .unit-label    { display: none; }
-  .brand-name    { display: none; }
-}
-
-@media (max-width: 480px) {
-  .geo-toolbar { padding: 0 10px; gap: 6px; }
-  .tb-right .save-btn :deep(.v-btn__prepend) { display: none; }
-}
+.fade-hud-enter-active,.fade-hud-leave-active { transition:opacity .2s ease; }
+.fade-hud-enter-from,.fade-hud-leave-to       { opacity:0; }
 </style>
