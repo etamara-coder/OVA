@@ -209,7 +209,10 @@ const route = useRoute()
 const menuAbierto = ref(false)
 const { visitadas } = storeToRefs(usuario)
 
-const esDashboardHome = computed(() => route.path === '/dashboard')
+// Reemplaza los computeds existentes con estas versiones
+const normalizedPath = computed(() => route.path.replace(/\/$/, '') || '/')
+
+const esDashboardHome = computed(() => normalizedPath.value === '/dashboard')
 
 const nombresSeccion = {
   '/dashboard':             'Dashboard',
@@ -221,7 +224,7 @@ const nombresSeccion = {
   '/dashboard/creditos':    'Créditos',
 }
 
-const seccionActual = computed(() => nombresSeccion[route.path] ?? 'Dashboard')
+const seccionActual = computed(() => nombresSeccion[normalizedPath.value] ?? 'Dashboard')
 
 const progreso = computed(() => {
   const rutas = Object.keys(nombresSeccion).filter(r => r !== '/dashboard')
@@ -229,12 +232,11 @@ const progreso = computed(() => {
   return Math.round((visitadasEnOrden.length / rutas.length) * 100)
 })
 
-const seccionCompletada = computed(() => visitadas.value.includes(route.path))
+const seccionCompletada = computed(() => visitadas.value.includes(normalizedPath.value))
 
 const completarSeccion = () => {
-  usuario.marcarVisitada(route.path)
+  usuario.marcarVisitada(normalizedPath.value)
 }
-
 const menu = [
   { label: 'Contenido',   ruta: '/dashboard/contenido',   emoji: '📐', desc: 'Fórmulas y propiedades',   bgLight: 'rgba(59,130,246,0.12)'  },
   { label: 'Práctica',    ruta: '/dashboard/practica',    emoji: '✏️', desc: 'Canvas interactivo',        bgLight: 'rgba(8,145,178,0.12)'   },
