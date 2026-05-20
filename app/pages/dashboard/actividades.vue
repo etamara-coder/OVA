@@ -130,62 +130,62 @@
               </div>
             </div>
 
-            <!-- ③ Quiz -->
+            <!-- ③ Quiz (preguntas y opciones aleatorias) -->
             <div v-else-if="actActiva?.id === 'quiz'">
               <div v-if="!quizTerminado">
                 <div class="quiz-header">
-                  <span class="quiz-progreso">Pregunta {{ quizIndice + 1 }} de {{ quizPreguntas.length }}</span>
+                  <span class="quiz-progreso">Pregunta {{ quizIndice + 1 }} de {{ quizPreguntasAleatorias.length }}</span>
                   <span class="quiz-timer" :style="{ color: quizTiempo < 10 ? '#ef4444' : '#378ADD' }">⏱ {{ quizTiempo }}s</span>
                 </div>
-                <div class="quiz-barra"><div class="quiz-barra-fill" :style="{ width: (quizIndice / quizPreguntas.length * 100) + '%' }"></div></div>
-                <p class="quiz-pregunta">{{ quizPreguntas[quizIndice].pregunta }}</p>
+                <div class="quiz-barra"><div class="quiz-barra-fill" :style="{ width: (quizIndice / quizPreguntasAleatorias.length * 100) + '%' }"></div></div>
+                <p class="quiz-pregunta">{{ quizPreguntasAleatorias[quizIndice].pregunta }}</p>
                 <div class="quiz-opciones">
-                  <button v-for="op in quizPreguntas[quizIndice].opciones" :key="op"
+                  <button v-for="op in quizPreguntasAleatorias[quizIndice].opciones" :key="op"
                     class="quiz-opcion"
-                    :class="{ correcta: quizRespondida && op === quizPreguntas[quizIndice].correcta, incorrecta: quizRespondida && op === quizRespuesta && op !== quizPreguntas[quizIndice].correcta }"
+                    :class="{ correcta: quizRespondida && op === quizPreguntasAleatorias[quizIndice].correcta, incorrecta: quizRespondida && op === quizRespuesta && op !== quizPreguntasAleatorias[quizIndice].correcta }"
                     :disabled="quizRespondida" @click="responderQuiz(op)">{{ op }}</button>
                 </div>
-                <p v-if="quizRespondida" class="quiz-feedback" :style="{ color: quizRespuesta === quizPreguntas[quizIndice].correcta ? '#16a34a' : '#ef4444' }">
-                  {{ quizRespuesta === quizPreguntas[quizIndice].correcta ? '✅ ¡Correcto!' : '❌ La respuesta era: ' + quizPreguntas[quizIndice].correcta }}
+                <p v-if="quizRespondida" class="quiz-feedback" :style="{ color: quizRespuesta === quizPreguntasAleatorias[quizIndice].correcta ? '#16a34a' : '#ef4444' }">
+                  {{ quizRespuesta === quizPreguntasAleatorias[quizIndice].correcta ? '✅ ¡Correcto!' : '❌ La respuesta era: ' + quizPreguntasAleatorias[quizIndice].correcta }}
                 </p>
-                <button v-if="quizRespondida" class="calc-btn" @click="siguientePregunta">{{ quizIndice < quizPreguntas.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
+                <button v-if="quizRespondida" class="calc-btn" @click="siguientePregunta">{{ quizIndice < quizPreguntasAleatorias.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
               </div>
               <div v-else class="quiz-resultado">
                 <p class="quiz-resultado-emoji">{{ quizPuntaje >= 5 ? '🎉' : '📚' }}</p>
                 <h3>{{ quizPuntaje >= 5 ? '¡Excelente!' : 'Sigue practicando' }}</h3>
-                <p>Obtuviste <strong>{{ quizPuntaje }}</strong> de <strong>{{ quizPreguntas.length }}</strong> correctas.</p>
+                <p>Obtuviste <strong>{{ quizPuntaje }}</strong> de <strong>{{ quizPreguntasAleatorias.length }}</strong> correctas.</p>
                 <button class="calc-btn" @click="reiniciarQuiz">Intentar de nuevo</button>
               </div>
             </div>
 
-            <!-- ④ Adivina -->
+            <!-- ④ Adivina (preguntas y opciones aleatorias) -->
             <div v-else-if="actActiva?.id === 'adivina'">
               <p class="modal__instruccion">Con los datos dados, ¿a qué figura pertenece esa área?</p>
               <div v-if="!adivinaTerminado">
                 <div class="adivina-datos">
-                  <p v-for="d in adivinaActual.datos" :key="d">📌 {{ d }}</p>
-                  <p class="adivina-area">Área = <strong>{{ adivinaActual.area }}</strong></p>
+                  <p v-for="d in adivinaPreguntasAleatorias[adivinaIndice].datos" :key="d">📌 {{ d }}</p>
+                  <p class="adivina-area">Área = <strong>{{ adivinaPreguntasAleatorias[adivinaIndice].area }}</strong></p>
                 </div>
                 <div class="quiz-opciones" style="margin-top:12px">
-                  <button v-for="op in adivinaActual.opciones" :key="op"
+                  <button v-for="op in adivinaPreguntasAleatorias[adivinaIndice].opciones" :key="op"
                     class="quiz-opcion"
-                    :class="{ correcta: adivinaRespondida && op === adivinaActual.correcta, incorrecta: adivinaRespondida && op === adivinaRespuesta && op !== adivinaActual.correcta }"
+                    :class="{ correcta: adivinaRespondida && op === adivinaPreguntasAleatorias[adivinaIndice].correcta, incorrecta: adivinaRespondida && op === adivinaRespuesta && op !== adivinaPreguntasAleatorias[adivinaIndice].correcta }"
                     :disabled="adivinaRespondida" @click="responderAdivina(op)">{{ op }}</button>
                 </div>
-                <p v-if="adivinaRespondida" class="quiz-feedback" :style="{ color: adivinaRespuesta === adivinaActual.correcta ? '#16a34a' : '#ef4444' }">
-                  {{ adivinaRespuesta === adivinaActual.correcta ? '✅ ¡Correcto!' : '❌ Era: ' + adivinaActual.correcta }}
+                <p v-if="adivinaRespondida" class="quiz-feedback" :style="{ color: adivinaRespuesta === adivinaPreguntasAleatorias[adivinaIndice].correcta ? '#16a34a' : '#ef4444' }">
+                  {{ adivinaRespuesta === adivinaPreguntasAleatorias[adivinaIndice].correcta ? '✅ ¡Correcto!' : '❌ Era: ' + adivinaPreguntasAleatorias[adivinaIndice].correcta }}
                 </p>
-                <button v-if="adivinaRespondida" class="calc-btn" style="margin-top:12px" @click="siguienteAdivina">{{ adivinaIndice < adivinaPreguntas.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
+                <button v-if="adivinaRespondida" class="calc-btn" style="margin-top:12px" @click="siguienteAdivina">{{ adivinaIndice < adivinaPreguntasAleatorias.length - 1 ? 'Siguiente →' : 'Ver resultado' }}</button>
               </div>
               <div v-else class="quiz-resultado">
                 <p class="quiz-resultado-emoji">{{ adivinaPuntaje >= 4 ? '🎉' : '📚' }}</p>
                 <h3>{{ adivinaPuntaje >= 4 ? '¡Buen ojo!' : 'Sigue intentando' }}</h3>
-                <p>Adivinaste <strong>{{ adivinaPuntaje }}</strong> de <strong>{{ adivinaPreguntas.length }}</strong>.</p>
+                <p>Adivinaste <strong>{{ adivinaPuntaje }}</strong> de <strong>{{ adivinaPreguntasAleatorias.length }}</strong>.</p>
                 <button class="calc-btn" @click="reiniciarAdivina">Intentar de nuevo</button>
               </div>
             </div>
 
-            <!-- ⑤ Carrera -->
+            <!-- ⑤ Carrera (ejercicios aleatorios) -->
             <div v-else-if="actActiva?.id === 'carrera'">
               <div v-if="!carreraIniciada && !carreraTerminada">
                 <p class="modal__instruccion">Tienes 60 segundos para resolver la mayor cantidad de ejercicios posible. ¡Buena suerte!</p>
@@ -247,8 +247,15 @@
 </template>
 
 <script setup>
+import { useUsuarioStore } from '~/stores/usuario'
+import { onMounted } from 'vue'
+const usuario = useUsuarioStore()
+onMounted(() => usuario.marcarVisitada('/dashboard/actividades'))
 definePageMeta({ layout: 'dashboard' })
 import { ref, computed, defineComponent, h, onUnmounted } from 'vue'
+
+// ── Utilidad: barajar array ──────────────────────────────
+const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5)
 
 const actividades = [
   { id: 'arrastra',    emoji: '🖱️', tipo: 'Arrastrar',  dificultad: '⭐ Básico',       nombre: 'Une Figura y Fórmula',     desc: 'Arrastra cada figura geométrica hacia su fórmula de área correcta.',            color: '#3B82F6', bgLight: 'rgba(59,130,246,0.1)'  },
@@ -265,7 +272,7 @@ const actActiva = ref(null)
 const abrirActividad = (act) => {
   actActiva.value = act
   modalAbierto.value = true
-  if (act.id === 'quiz') reiniciarQuiz()
+  if (act.id === 'quiz')    reiniciarQuiz()
   if (act.id === 'adivina') reiniciarAdivina()
   if (act.id === 'arrastra') reiniciarDrag()
 }
@@ -281,46 +288,47 @@ const mkSvg = (nodos) =>
   defineComponent({ render: () => h('svg', { width: 48, height: 48, viewBox: '0 0 80 80' }, nodos) })
 
 const pares = [
-  { id: 'cuadrado',    nombre: 'Cuadrado',          color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  formula: 'A = l²',
+  { id: 'cuadrado',      nombre: 'Cuadrado',          color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  formula: 'A = l²',
     svg: mkSvg([h('rect',{x:10,y:10,width:60,height:60,rx:4,fill:'rgba(59,130,246,0.2)',stroke:'#3B82F6','stroke-width':2})]),
     pasos: ['El cuadrado tiene todos sus lados iguales de longitud l.','Multiplica el lado por sí mismo.','A = l × l = l²','Ejemplo: l=4 → A=16 cm²'] },
-  { id: 'rectangulo',  nombre: 'Rectángulo',         color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', formula: 'A = b × h',
+  { id: 'rectangulo',    nombre: 'Rectángulo',         color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', formula: 'A = b × h',
     svg: mkSvg([h('rect',{x:6,y:20,width:68,height:40,rx:4,fill:'rgba(139,92,246,0.2)',stroke:'#8B5CF6','stroke-width':2})]),
     pasos: ['Tiene base (b) y altura (h).','Multiplica base por altura.','A = b × h','Ejemplo: b=8, h=3 → A=24 cm²'] },
-  { id: 'triangulo',   nombre: 'Triángulo',          color: '#16a34a', bg: 'rgba(34,197,94,0.08)',  formula: 'A = (b × h) / 2',
+  { id: 'triangulo',     nombre: 'Triángulo',          color: '#16a34a', bg: 'rgba(34,197,94,0.08)',  formula: 'A = (b × h) / 2',
     svg: mkSvg([h('polygon',{points:'40,8 74,72 6,72',fill:'rgba(34,197,94,0.2)',stroke:'#22C55E','stroke-width':2})]),
     pasos: ['Tiene base (b) y altura (h) perpendicular.','Es la mitad de un rectángulo.','A = (b × h) / 2','Ejemplo: b=10, h=6 → A=30 cm²'] },
-  { id: 'circulo',     nombre: 'Círculo',            color: '#F97316', bg: 'rgba(251,146,60,0.08)', formula: 'A = π × r²',
+  { id: 'circulo',       nombre: 'Círculo',            color: '#F97316', bg: 'rgba(251,146,60,0.08)', formula: 'A = π × r²',
     svg: mkSvg([h('circle',{cx:40,cy:40,r:32,fill:'rgba(251,146,60,0.2)',stroke:'#F97316','stroke-width':2}),h('circle',{cx:40,cy:40,r:2.5,fill:'#F97316'})]),
     pasos: ['Tiene radio (r) del centro al borde.','π ≈ 3.1416','A = π × r²','Ejemplo: r=5 → A≈78.54 cm²'] },
-  { id: 'trapecio',    nombre: 'Trapecio',           color: '#EC4899', bg: 'rgba(236,72,153,0.08)', formula: 'A = (B + b) × h / 2',
+  { id: 'trapecio',      nombre: 'Trapecio',           color: '#EC4899', bg: 'rgba(236,72,153,0.08)', formula: 'A = (B + b) × h / 2',
     svg: mkSvg([h('polygon',{points:'20,16 60,16 74,64 6,64',fill:'rgba(236,72,153,0.2)',stroke:'#EC4899','stroke-width':2})]),
     pasos: ['Bases B (mayor) y b (menor), altura h.','Suma las bases: B + b.','Multiplica por h y divide entre 2.','Ejemplo: B=10,b=6,h=4 → A=32 cm²'] },
-  { id: 'rombo',       nombre: 'Rombo',              color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  formula: 'A = (d₁ × d₂) / 2',
+  { id: 'rombo',         nombre: 'Rombo',              color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  formula: 'A = (d₁ × d₂) / 2',
     svg: mkSvg([h('polygon',{points:'40,6 74,40 40,74 6,40',fill:'rgba(239,68,68,0.2)',stroke:'#EF4444','stroke-width':2}),h('line',{x1:6,y1:40,x2:74,y2:40,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3}),h('line',{x1:40,y1:6,x2:40,y2:74,stroke:'#EF4444','stroke-width':1,'stroke-dasharray':3})]),
     pasos: ['Diagonales d₁ (mayor) y d₂ (menor).','Multiplica las diagonales.','Divide entre 2.','Ejemplo: d₁=12,d₂=8 → A=48 cm²'] },
-  { id: 'paralelogramo', nombre: 'Paralelogramo',   color: '#0891b2', bg: 'rgba(8,145,178,0.08)',  formula: 'A = b × h',
+  { id: 'paralelogramo', nombre: 'Paralelogramo',      color: '#0891b2', bg: 'rgba(8,145,178,0.08)',  formula: 'A = b × h',
     svg: mkSvg([h('polygon',{points:'18,64 26,16 62,16 54,64',fill:'rgba(8,145,178,0.2)',stroke:'#0891b2','stroke-width':2})]),
     pasos: ['Tiene base (b) y altura perpendicular (h).','La altura NO es el lado inclinado.','A = b × h','Ejemplo: b=9,h=5 → A=45 cm²'] },
-  { id: 'pentagono',   nombre: 'Pentágono Regular',  color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', formula: 'A = (P × a) / 2',
+  { id: 'pentagono',     nombre: 'Pentágono Regular',  color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', formula: 'A = (P × a) / 2',
     svg: mkSvg([h('polygon',{points:'40,5 75,28 62,68 18,68 5,28',fill:'rgba(124,58,237,0.2)',stroke:'#7c3aed','stroke-width':2}),h('line',{x1:40,y1:40,x2:40,y2:68,stroke:'#7c3aed','stroke-width':1,'stroke-dasharray':3})]),
     pasos: ['P = perímetro (5 × lado), a = apotema.','La apotema va del centro al punto medio de un lado.','A = (P × a) / 2','Ejemplo: l=6,a=4.13 → A≈62 cm²'] },
 ]
 
 const dragArrastrado = ref(null)
-const dragCorrectas = ref(0)
-const dragIntentos = ref(0)
+const dragCorrectas  = ref(0)
+const dragIntentos   = ref(0)
 const dragCompletado = ref(false)
 const dragSolucionFigura = ref(null)
-const dragFigurasUnidas = ref([])
-const dragFormulas = ref([])
+const dragFigurasUnidas  = ref([])
+const dragFormulas       = ref([])
 
 const dragFigurasRestantes = computed(() => pares.filter(p => !dragFigurasUnidas.value.find(u => u.id === p.id)))
 
 const reiniciarDrag = () => {
   dragCorrectas.value = 0; dragIntentos.value = 0
   dragCompletado.value = false; dragSolucionFigura.value = null; dragFigurasUnidas.value = []
-  dragFormulas.value = [...pares].sort(() => Math.random() - 0.5).map(p => ({ id: p.id, texto: p.formula, estado: null, hover: false }))
+  // Fórmulas en orden aleatorio
+  dragFormulas.value = shuffle(pares).map(p => ({ id: p.id, texto: p.formula, estado: null, hover: false }))
 }
 
 const onDragStart = (figura) => { dragArrastrado.value = figura }
@@ -352,15 +360,15 @@ const calculadoraFiguras = [
   { nombre: 'Paralelogramo',     campos: [{ key:'b',  label:'Base (b)' },{ key:'h', label:'Altura (h)' }],                                            formula: v => +(v.b*v.h).toFixed(2) },
   { nombre: 'Pentágono Regular', campos: [{ key:'l',  label:'Lado (l)' },{ key:'a', label:'Apotema (a)' }],                                           formula: v => +((5*v.l*v.a)/2).toFixed(2) },
 ]
-const calcFigura = ref(null)
+const calcFigura    = ref(null)
 const calcFiguraObj = ref(null)
-const calcValores = ref({})
+const calcValores   = ref({})
 const calcResultado = ref(null)
 const seleccionarFigura = (f) => { calcFigura.value = f.nombre; calcFiguraObj.value = f; calcValores.value = {}; calcResultado.value = null }
-const calcularArea = () => { if (calcFiguraObj.value) calcResultado.value = calcFiguraObj.value.formula(calcValores.value) }
+const calcularArea  = () => { if (calcFiguraObj.value) calcResultado.value = calcFiguraObj.value.formula(calcValores.value) }
 
-// ── Quiz ─────────────────────────────────────────────────
-const quizPreguntas = [
+// ── Quiz (banco completo → mezcla preguntas Y opciones) ──
+const quizBanco = [
   { pregunta: '¿Cuál es el área de un cuadrado con lado 6 cm?',                        opciones: ['24 cm²','36 cm²','12 cm²','30 cm²'],        correcta: '36 cm²' },
   { pregunta: '¿Cuál es el área de un triángulo con base 10 cm y altura 4 cm?',        opciones: ['40 cm²','14 cm²','20 cm²','8 cm²'],         correcta: '20 cm²' },
   { pregunta: '¿Cuál es la fórmula del área del círculo?',                              opciones: ['A = 2πr','A = πr²','A = πd','A = r²'],      correcta: 'A = πr²' },
@@ -368,80 +376,139 @@ const quizPreguntas = [
   { pregunta: '¿Cuál es el área de un rombo con diagonales 12 cm y 8 cm?',             opciones: ['48 cm²','96 cm²','20 cm²','24 cm²'],        correcta: '48 cm²' },
   { pregunta: '¿Cuál es el área de un paralelogramo con base 7 cm y altura 4 cm?',     opciones: ['11 cm²','28 cm²','14 cm²','22 cm²'],        correcta: '28 cm²' },
   { pregunta: '¿Cuál es la fórmula del área del pentágono regular?',                    opciones: ['A = 5l','A = (P×a)/2','A = l²','A = Pa'],   correcta: 'A = (P×a)/2' },
+  { pregunta: '¿Cuál es el área de un cuadrado con lado 9 cm?',                        opciones: ['36 cm²','45 cm²','81 cm²','18 cm²'],        correcta: '81 cm²' },
+  { pregunta: '¿Cuál es el área de un trapecio con B=10, b=6, h=4?',                   opciones: ['32 cm²','64 cm²','16 cm²','48 cm²'],        correcta: '32 cm²' },
+  { pregunta: '¿Cuál es la fórmula del área del triángulo?',                            opciones: ['A = b×h','A = (b×h)/2','A = b+h','A = 2bh'],correcta: 'A = (b×h)/2' },
 ]
-const quizIndice = ref(0); const quizRespuesta = ref(null); const quizRespondida = ref(false)
-const quizPuntaje = ref(0); const quizTerminado = ref(false); const quizTiempo = ref(20)
-const timerQuiz = ref(null)
+
+const quizPreguntasAleatorias = ref([])
+const quizIndice    = ref(0)
+const quizRespuesta = ref(null)
+const quizRespondida = ref(false)
+const quizPuntaje   = ref(0)
+const quizTerminado = ref(false)
+const quizTiempo    = ref(20)
+const timerQuiz     = ref(null)
 
 const reiniciarQuiz = () => {
-  quizIndice.value=0; quizRespuesta.value=null; quizRespondida.value=false
-  quizPuntaje.value=0; quizTerminado.value=false; quizTiempo.value=20
+  // Mezcla preguntas y dentro de cada pregunta mezcla sus opciones
+  quizPreguntasAleatorias.value = shuffle(quizBanco).map(p => ({ ...p, opciones: shuffle(p.opciones) }))
+  quizIndice.value = 0; quizRespuesta.value = null; quizRespondida.value = false
+  quizPuntaje.value = 0; quizTerminado.value = false; quizTiempo.value = 20
   clearInterval(timerQuiz.value)
   timerQuiz.value = setInterval(() => {
     if (quizRespondida.value) return
     quizTiempo.value--
-    if (quizTiempo.value <= 0) { quizRespondida.value=true; quizRespuesta.value=null }
+    if (quizTiempo.value <= 0) { quizRespondida.value = true; quizRespuesta.value = null }
   }, 1000)
 }
-const responderQuiz = (op) => { if (quizRespondida.value) return; quizRespuesta.value=op; quizRespondida.value=true; if (op===quizPreguntas[quizIndice.value].correcta) quizPuntaje.value++ }
-const siguientePregunta = () => {
-  if (quizIndice.value < quizPreguntas.length-1) { quizIndice.value++; quizRespondida.value=false; quizRespuesta.value=null; quizTiempo.value=20 }
-  else { quizTerminado.value=true; clearInterval(timerQuiz.value) }
+
+const responderQuiz = (op) => {
+  if (quizRespondida.value) return
+  quizRespuesta.value = op; quizRespondida.value = true
+  if (op === quizPreguntasAleatorias.value[quizIndice.value].correcta) quizPuntaje.value++
 }
 
-// ── Adivina ──────────────────────────────────────────────
-const adivinaPreguntas = [
-  { datos: ['l = 9 cm'],                          area: '81 cm²',     opciones: ['Cuadrado','Rectángulo','Rombo','Trapecio'],          correcta: 'Cuadrado' },
-  { datos: ['b = 6 cm','h = 4 cm'],              area: '12 cm²',     opciones: ['Rectángulo','Triángulo','Trapecio','Cuadrado'],       correcta: 'Triángulo' },
-  { datos: ['d₁ = 10 cm','d₂ = 6 cm'],          area: '30 cm²',     opciones: ['Triángulo','Cuadrado','Rombo','Círculo'],             correcta: 'Rombo' },
-  { datos: ['r = 7 cm'],                          area: '153.94 cm²', opciones: ['Cuadrado','Círculo','Trapecio','Rectángulo'],         correcta: 'Círculo' },
-  { datos: ['B = 12 cm','b = 8 cm','h = 5 cm'], area: '50 cm²',     opciones: ['Rectángulo','Rombo','Trapecio','Triángulo'],          correcta: 'Trapecio' },
-  { datos: ['b = 9 cm','h = 5 cm'],              area: '45 cm²',     opciones: ['Triángulo','Paralelogramo','Trapecio','Rombo'],       correcta: 'Paralelogramo' },
-  { datos: ['l = 6 cm','a = 4.13 cm'],           area: '61.95 cm²',  opciones: ['Hexágono','Cuadrado','Pentágono Regular','Triángulo'],correcta: 'Pentágono Regular' },
-]
-const adivinaIndice = ref(0); const adivinaRespuesta = ref(null); const adivinaRespondida = ref(false)
-const adivinaPuntaje = ref(0); const adivinaTerminado = ref(false)
-const adivinaActual = computed(() => adivinaPreguntas[adivinaIndice.value])
-const responderAdivina = (op) => { if (adivinaRespondida.value) return; adivinaRespuesta.value=op; adivinaRespondida.value=true; if (op===adivinaActual.value.correcta) adivinaPuntaje.value++ }
-const siguienteAdivina = () => { if (adivinaIndice.value<adivinaPreguntas.length-1) { adivinaIndice.value++; adivinaRespondida.value=false; adivinaRespuesta.value=null } else adivinaTerminado.value=true }
-const reiniciarAdivina = () => { adivinaIndice.value=0; adivinaRespuesta.value=null; adivinaRespondida.value=false; adivinaPuntaje.value=0; adivinaTerminado.value=false }
+const siguientePregunta = () => {
+  if (quizIndice.value < quizPreguntasAleatorias.value.length - 1) {
+    quizIndice.value++; quizRespondida.value = false; quizRespuesta.value = null; quizTiempo.value = 20
+  } else {
+    quizTerminado.value = true; clearInterval(timerQuiz.value)
+  }
+}
 
-// ── Carrera ──────────────────────────────────────────────
-const carreraEjercicios = [
-  { pregunta:'Cuadrado, l = 5 cm. ¿Área?',               opciones:['20 cm²','25 cm²','10 cm²','15 cm²'],  correcta:'25 cm²' },
-  { pregunta:'Rectángulo, b = 7, h = 3. ¿Área?',         opciones:['21 cm²','10 cm²','14 cm²','42 cm²'],  correcta:'21 cm²' },
-  { pregunta:'Triángulo, b = 8, h = 6. ¿Área?',          opciones:['48 cm²','14 cm²','24 cm²','16 cm²'],  correcta:'24 cm²' },
-  { pregunta:'Rombo, d₁=10, d₂=4. ¿Área?',              opciones:['40 cm²','20 cm²','14 cm²','28 cm²'],  correcta:'20 cm²' },
-  { pregunta:'Paralelogramo, b=6, h=4. ¿Área?',          opciones:['10 cm²','24 cm²','12 cm²','48 cm²'],  correcta:'24 cm²' },
-  { pregunta:'Pentágono, l=5, a=3.44. ¿Área aproximada?',opciones:['43 cm²','86 cm²','17.2 cm²','34 cm²'],correcta:'43 cm²' },
-  { pregunta:'Cuadrado, l = 9 cm. ¿Área?',               opciones:['18 cm²','36 cm²','81 cm²','72 cm²'],  correcta:'81 cm²' },
-  { pregunta:'Rectángulo, b=10, h=4. ¿Área?',            opciones:['14 cm²','40 cm²','20 cm²','28 cm²'],  correcta:'40 cm²' },
-  { pregunta:'Triángulo, b=12, h=5. ¿Área?',             opciones:['60 cm²','17 cm²','30 cm²','24 cm²'],  correcta:'30 cm²' },
-  { pregunta:'Rombo, d₁=14, d₂=6. ¿Área?',              opciones:['42 cm²','84 cm²','20 cm²','48 cm²'],  correcta:'42 cm²' },
+// ── Adivina (banco completo → mezcla preguntas Y opciones) ──
+const adivinaBanco = [
+  { datos: ['l = 9 cm'],                          area: '81 cm²',     opciones: ['Cuadrado','Rectángulo','Rombo','Trapecio'],          correcta: 'Cuadrado' },
+  { datos: ['b = 6 cm','h = 4 cm'],               area: '12 cm²',     opciones: ['Rectángulo','Triángulo','Trapecio','Cuadrado'],       correcta: 'Triángulo' },
+  { datos: ['d₁ = 10 cm','d₂ = 6 cm'],           area: '30 cm²',     opciones: ['Triángulo','Cuadrado','Rombo','Círculo'],             correcta: 'Rombo' },
+  { datos: ['r = 7 cm'],                           area: '153.94 cm²', opciones: ['Cuadrado','Círculo','Trapecio','Rectángulo'],         correcta: 'Círculo' },
+  { datos: ['B = 12 cm','b = 8 cm','h = 5 cm'],  area: '50 cm²',     opciones: ['Rectángulo','Rombo','Trapecio','Triángulo'],          correcta: 'Trapecio' },
+  { datos: ['b = 9 cm','h = 5 cm'],               area: '45 cm²',     opciones: ['Triángulo','Paralelogramo','Trapecio','Rombo'],       correcta: 'Paralelogramo' },
+  { datos: ['l = 6 cm','a = 4.13 cm'],            area: '61.95 cm²',  opciones: ['Hexágono','Cuadrado','Pentágono Regular','Triángulo'],correcta: 'Pentágono Regular' },
+  { datos: ['b = 8 cm','h = 8 cm'],               area: '64 cm²',     opciones: ['Cuadrado','Rectángulo','Triángulo','Rombo'],          correcta: 'Rectángulo' },
+  { datos: ['d₁ = 14 cm','d₂ = 6 cm'],           area: '42 cm²',     opciones: ['Triángulo','Rombo','Trapecio','Círculo'],             correcta: 'Rombo' },
+  { datos: ['r = 3 cm'],                           area: '28.27 cm²',  opciones: ['Cuadrado','Triángulo','Círculo','Rombo'],             correcta: 'Círculo' },
 ]
-const carreraIniciada = ref(false); const carreraTerminada = ref(false)
-const carreraCorrectas = ref(0); const carreraTiempo = ref(60)
-const carreraIndice = ref(0); const carreraRespuesta = ref(null); const carreraRespondida = ref(false)
-const timerCarrera = ref(null)
-const carreraActual = computed(() => carreraEjercicios[carreraIndice.value % carreraEjercicios.length])
+
+const adivinaPreguntasAleatorias = ref([])
+const adivinaIndice    = ref(0)
+const adivinaRespuesta = ref(null)
+const adivinaRespondida = ref(false)
+const adivinaPuntaje   = ref(0)
+const adivinaTerminado = ref(false)
+
+const reiniciarAdivina = () => {
+  // Mezcla preguntas y opciones dentro de cada una
+  adivinaPreguntasAleatorias.value = shuffle(adivinaBanco).map(p => ({ ...p, opciones: shuffle(p.opciones) }))
+  adivinaIndice.value = 0; adivinaRespuesta.value = null; adivinaRespondida.value = false
+  adivinaPuntaje.value = 0; adivinaTerminado.value = false
+}
+
+const responderAdivina = (op) => {
+  if (adivinaRespondida.value) return
+  adivinaRespuesta.value = op; adivinaRespondida.value = true
+  if (op === adivinaPreguntasAleatorias.value[adivinaIndice.value].correcta) adivinaPuntaje.value++
+}
+
+const siguienteAdivina = () => {
+  if (adivinaIndice.value < adivinaPreguntasAleatorias.value.length - 1) {
+    adivinaIndice.value++; adivinaRespondida.value = false; adivinaRespuesta.value = null
+  } else {
+    adivinaTerminado.value = true
+  }
+}
+
+// ── Carrera (banco completo → mezcla ejercicios Y opciones) ──
+const carreraBanco = [
+  { pregunta:'Cuadrado, l = 5 cm. ¿Área?',                opciones:['20 cm²','25 cm²','10 cm²','15 cm²'],  correcta:'25 cm²' },
+  { pregunta:'Rectángulo, b = 7, h = 3. ¿Área?',          opciones:['21 cm²','10 cm²','14 cm²','42 cm²'],  correcta:'21 cm²' },
+  { pregunta:'Triángulo, b = 8, h = 6. ¿Área?',           opciones:['48 cm²','14 cm²','24 cm²','16 cm²'],  correcta:'24 cm²' },
+  { pregunta:'Rombo, d₁=10, d₂=4. ¿Área?',               opciones:['40 cm²','20 cm²','14 cm²','28 cm²'],  correcta:'20 cm²' },
+  { pregunta:'Paralelogramo, b=6, h=4. ¿Área?',           opciones:['10 cm²','24 cm²','12 cm²','48 cm²'],  correcta:'24 cm²' },
+  { pregunta:'Pentágono, l=5, a=3.44. ¿Área aprox.?',     opciones:['43 cm²','86 cm²','17.2 cm²','34 cm²'],correcta:'43 cm²' },
+  { pregunta:'Cuadrado, l = 9 cm. ¿Área?',                opciones:['18 cm²','36 cm²','81 cm²','72 cm²'],  correcta:'81 cm²' },
+  { pregunta:'Rectángulo, b=10, h=4. ¿Área?',             opciones:['14 cm²','40 cm²','20 cm²','28 cm²'],  correcta:'40 cm²' },
+  { pregunta:'Triángulo, b=12, h=5. ¿Área?',              opciones:['60 cm²','17 cm²','30 cm²','24 cm²'],  correcta:'30 cm²' },
+  { pregunta:'Rombo, d₁=14, d₂=6. ¿Área?',               opciones:['42 cm²','84 cm²','20 cm²','48 cm²'],  correcta:'42 cm²' },
+  { pregunta:'Círculo, r=4. ¿Área aprox.?',                opciones:['50.27 cm²','25.13 cm²','12.57 cm²','78.54 cm²'], correcta:'50.27 cm²' },
+  { pregunta:'Trapecio, B=8, b=4, h=5. ¿Área?',           opciones:['30 cm²','60 cm²','20 cm²','40 cm²'],  correcta:'30 cm²' },
+]
+
+const carreraEjerciciosAleatorios = ref([])
+const carreraIniciada  = ref(false)
+const carreraTerminada = ref(false)
+const carreraCorrectas = ref(0)
+const carreraTiempo    = ref(60)
+const carreraIndice    = ref(0)
+const carreraRespuesta = ref(null)
+const carreraRespondida = ref(false)
+const timerCarrera     = ref(null)
+
+const carreraActual = computed(() => carreraEjerciciosAleatorios.value[carreraIndice.value % carreraEjerciciosAleatorios.value.length] || {})
+
 const iniciarCarrera = () => {
-  carreraIniciada.value=true; carreraTerminada.value=false; carreraCorrectas.value=0
-  carreraTiempo.value=60; carreraIndice.value=0; carreraRespondida.value=false
+  // Mezcla ejercicios y opciones
+  carreraEjerciciosAleatorios.value = shuffle(carreraBanco).map(e => ({ ...e, opciones: shuffle(e.opciones) }))
+  carreraIniciada.value = true; carreraTerminada.value = false; carreraCorrectas.value = 0
+  carreraTiempo.value = 60; carreraIndice.value = 0; carreraRespondida.value = false
   timerCarrera.value = setInterval(() => {
     carreraTiempo.value--
-    if (carreraTiempo.value<=0) { clearInterval(timerCarrera.value); carreraIniciada.value=false; carreraTerminada.value=true }
-  },1000)
+    if (carreraTiempo.value <= 0) { clearInterval(timerCarrera.value); carreraIniciada.value = false; carreraTerminada.value = true }
+  }, 1000)
 }
+
 const responderCarrera = (op) => {
   if (carreraRespondida.value) return
-  carreraRespuesta.value=op; carreraRespondida.value=true
-  if (op===carreraActual.value.correcta) carreraCorrectas.value++
-  setTimeout(()=>{ carreraIndice.value++; carreraRespondida.value=false; carreraRespuesta.value=null },600)
+  carreraRespuesta.value = op; carreraRespondida.value = true
+  if (op === carreraActual.value.correcta) carreraCorrectas.value++
+  setTimeout(() => { carreraIndice.value++; carreraRespondida.value = false; carreraRespuesta.value = null }, 600)
 }
-const reiniciarCarrera = () => { carreraIniciada.value=false; carreraTerminada.value=false }
 
-// ── Ruleta ───────────────────────────────────────────────
-const ruletaOpciones = [
+const reiniciarCarrera = () => { carreraIniciada.value = false; carreraTerminada.value = false }
+
+// ── Ruleta (opciones mezcladas al girar) ─────────────────
+const ruletaBanco = [
   { nombre:'Cuadrado',          emoji:'🟦', enunciado:'Un cuadrado tiene lado 8 cm. ¿Cuál es su área?',                       opciones:['64 cm²','32 cm²','16 cm²','48 cm²'],          correcta:'64 cm²'    },
   { nombre:'Triángulo',         emoji:'🔺', enunciado:'Triángulo con base 10 cm y altura 7 cm. ¿Área?',                       opciones:['35 cm²','70 cm²','17 cm²','28 cm²'],          correcta:'35 cm²'    },
   { nombre:'Círculo',           emoji:'⭕', enunciado:'Círculo con radio 4 cm. ¿Área aproximada?',                            opciones:['50.27 cm²','25.13 cm²','12.57 cm²','78.54 cm²'],correcta:'50.27 cm²'},
@@ -449,14 +516,26 @@ const ruletaOpciones = [
   { nombre:'Rectángulo',        emoji:'🟩', enunciado:'Rectángulo de 9 cm de base y 5 cm de altura. ¿Área?',                 opciones:['14 cm²','28 cm²','45 cm²','40 cm²'],          correcta:'45 cm²'    },
   { nombre:'Paralelogramo',     emoji:'🔹', enunciado:'Paralelogramo con base 8 cm y altura 3 cm. ¿Área?',                   opciones:['11 cm²','24 cm²','48 cm²','16 cm²'],          correcta:'24 cm²'    },
   { nombre:'Pentágono Regular', emoji:'⭐', enunciado:'Pentágono regular con lado 4 cm y apotema 2.75 cm. ¿Área aproximada?',opciones:['27.5 cm²','55 cm²','11 cm²','22 cm²'],        correcta:'27.5 cm²'  },
+  { nombre:'Cuadrado',          emoji:'🟦', enunciado:'Un cuadrado tiene lado 11 cm. ¿Cuál es su área?',                     opciones:['44 cm²','121 cm²','22 cm²','88 cm²'],         correcta:'121 cm²'   },
+  { nombre:'Triángulo',         emoji:'🔺', enunciado:'Triángulo con base 14 cm y altura 6 cm. ¿Área?',                      opciones:['84 cm²','42 cm²','20 cm²','28 cm²'],          correcta:'42 cm²'    },
 ]
-const ruletaFigura = ref(null); const ruletaGirando = ref(false)
-const ruletaRespuesta = ref(null); const ruletaRespondida = ref(false)
+
+const ruletaFigura    = ref(null)
+const ruletaGirando   = ref(false)
+const ruletaRespuesta = ref(null)
+const ruletaRespondida = ref(false)
+
 const girarRuleta = () => {
-  ruletaGirando.value=true; ruletaFigura.value=null; ruletaRespuesta.value=null; ruletaRespondida.value=false
-  setTimeout(()=>{ ruletaFigura.value=ruletaOpciones[Math.floor(Math.random()*ruletaOpciones.length)]; ruletaGirando.value=false },1500)
+  ruletaGirando.value = true; ruletaFigura.value = null; ruletaRespuesta.value = null; ruletaRespondida.value = false
+  setTimeout(() => {
+    const figura = ruletaBanco[Math.floor(Math.random() * ruletaBanco.length)]
+    // Mezcla las opciones también
+    ruletaFigura.value = { ...figura, opciones: shuffle(figura.opciones) }
+    ruletaGirando.value = false
+  }, 1500)
 }
-const responderRuleta = (op) => { if (ruletaRespondida.value) return; ruletaRespuesta.value=op; ruletaRespondida.value=true }
+
+const responderRuleta = (op) => { if (ruletaRespondida.value) return; ruletaRespuesta.value = op; ruletaRespondida.value = true }
 
 onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.value) })
 </script>
@@ -466,7 +545,6 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 
 .actividades-page { font-family:'DM Sans',sans-serif; display:flex; flex-direction:column; gap:28px; }
 
-/* Banner */
 .page-banner { background:linear-gradient(135deg,#0c1120 0%,#0d1f3c 50%,#0a1628 100%); border-radius:14px; padding:28px 32px; border:0.5px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:space-between; }
 .page-titulo  { font-size:22px; font-weight:700; color:#e8f0fe; margin:0 0 6px; letter-spacing:-0.3px; }
 .page-desc    { font-size:13px; color:#4a6fa5; margin:0; line-height:1.6; }
@@ -475,10 +553,8 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .banner-stat__num   { font-size:24px; font-weight:700; color:#e8f0fe; }
 .banner-stat__label { font-size:11px; color:#4a6fa5; }
 
-/* Grid */
 .actividades-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
 
-/* Tarjeta */
 .act-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px; display:flex; gap:16px; cursor:pointer; transition:box-shadow 0.2s,transform 0.15s; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
 .act-card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.1); transform:translateY(-2px); }
 .act-card__icono { width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -492,7 +568,6 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .act-card__footer { margin-top:4px; }
 .act-card__btn    { display:inline-block; font-size:12px; font-weight:600; color:#fff; padding:5px 12px; border-radius:8px; }
 
-/* Modal */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); }
 .modal { background:#fff; border-radius:18px; width:100%; max-width:600px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
 .modal__header { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; flex-shrink:0; border-bottom:1px solid #e2e8f0; }
@@ -504,7 +579,6 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .modal__body { padding:24px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
 .modal__instruccion { font-size:13.5px; color:#475569; margin:0; line-height:1.6; }
 
-/* Drag */
 .drag-stats { display:flex; gap:16px; font-size:13px; color:#475569; padding:10px 14px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
 .drag-contenedor { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:4px; }
 .drag-col { display:flex; flex-direction:column; gap:8px; }
@@ -514,14 +588,13 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .drag-item:hover  { box-shadow:0 4px 12px rgba(0,0,0,0.08); }
 .drag-item--unida { border-color:rgba(34,197,94,0.3)!important; background:rgba(34,197,94,0.05)!important; cursor:default; opacity:0.6; }
 .drop-zone { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-radius:10px; border:2px dashed #cbd5e1; background:#f8fafc; min-height:54px; transition:border-color 0.15s,background 0.15s; }
-.drop-zone--hover     { border-color:#378ADD; background:rgba(56,138,221,0.06); }
-.drop-zone--correcto  { border-color:#16a34a!important; background:rgba(34,197,94,0.08)!important; border-style:solid!important; }
-.drop-zone--incorrecto{ border-color:#EF4444!important; background:rgba(239,68,68,0.08)!important; border-style:solid!important; }
+.drop-zone--hover      { border-color:#378ADD; background:rgba(56,138,221,0.06); }
+.drop-zone--correcto   { border-color:#16a34a!important; background:rgba(34,197,94,0.08)!important; border-style:solid!important; }
+.drop-zone--incorrecto { border-color:#EF4444!important; background:rgba(239,68,68,0.08)!important; border-style:solid!important; }
 .formula-texto { font-size:15px; font-weight:700; color:#1e293b; }
 .completado-banner { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.3); border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .completado-banner p { font-size:13px; color:#16a34a; font-weight:500; margin:0; flex:1; }
 
-/* Solución */
 .solucion-panel { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px; }
 .solucion-header { display:flex; justify-content:space-between; align-items:center; }
 .solucion-titulo { font-size:14px; font-weight:600; color:#1e293b; margin:0; }
@@ -531,7 +604,6 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .paso-texto { font-size:13px; color:#334155; margin:0; line-height:1.5; padding-top:2px; }
 .solucion-formula { display:flex; align-items:center; justify-content:space-between; border:1.5px solid; border-radius:10px; padding:10px 16px; }
 
-/* Quiz */
 .quiz-header   { display:flex; justify-content:space-between; align-items:center; }
 .quiz-progreso { font-size:13px; color:#64748b; font-weight:500; }
 .quiz-timer    { font-size:14px; font-weight:700; }
@@ -541,20 +613,18 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .quiz-opciones { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .quiz-opcion   { padding:10px 12px; border-radius:10px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:500; cursor:pointer; color:#334155; transition:all 0.15s; text-align:left; }
 .quiz-opcion:hover:not(:disabled) { border-color:#378ADD; background:rgba(56,138,221,0.06); }
-.quiz-opcion.correcta  { background:rgba(34,197,94,0.1);  border-color:#22c55e; color:#16a34a; }
-.quiz-opcion.incorrecta{ background:rgba(239,68,68,0.1);  border-color:#ef4444; color:#dc2626; }
+.quiz-opcion.correcta   { background:rgba(34,197,94,0.1);  border-color:#22c55e; color:#16a34a; }
+.quiz-opcion.incorrecta { background:rgba(239,68,68,0.1);  border-color:#ef4444; color:#dc2626; }
 .quiz-feedback { font-size:13px; font-weight:600; margin:8px 0 0; }
 .quiz-resultado { text-align:center; padding:16px 0; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .quiz-resultado-emoji { font-size:48px; margin:0; }
 .quiz-resultado h3 { font-size:18px; font-weight:700; color:#1e293b; margin:0; }
 .quiz-resultado p  { font-size:14px; color:#475569; margin:0; }
 
-/* Adivina */
 .adivina-datos { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:4px; }
 .adivina-datos p { font-size:13px; color:#334155; margin:0; }
 .adivina-area { font-size:15px; font-weight:700; color:#1e293b; margin-top:6px!important; }
 
-/* Calculadora */
 .calc-figuras { display:flex; flex-wrap:wrap; gap:8px; }
 .calc-figura-btn { padding:6px 14px; border-radius:20px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:500; cursor:pointer; color:#475569; transition:all 0.15s; }
 .calc-figura-btn:hover { border-color:#378ADD; color:#378ADD; }
@@ -568,18 +638,15 @@ onUnmounted(() => { clearInterval(timerQuiz.value); clearInterval(timerCarrera.v
 .calc-btn:disabled { background:#94a3b8; cursor:not-allowed; }
 .calc-resultado { display:flex; align-items:center; justify-content:space-between; background:rgba(56,138,221,0.08); border:1.5px solid rgba(56,138,221,0.3); border-radius:10px; padding:12px 16px; font-size:14px; color:#475569; font-weight:500; }
 
-/* Ruleta */
 .ruleta-box { display:flex; flex-direction:column; align-items:center; gap:16px; padding:8px 0; }
 .ruleta { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#0c1120,#0d1f3c); border:3px solid #378ADD; display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow:0 4px 16px rgba(56,138,221,0.3); }
 .ruleta.girando { animation:girar 1.5s ease-out; }
 @keyframes girar { 0%{transform:rotate(0)} 100%{transform:rotate(1080deg)} }
 .ruleta-ejercicio { display:flex; flex-direction:column; gap:10px; width:100%; }
 
-/* Transición */
 .modal-enter-active,.modal-leave-active { transition:opacity 0.2s ease; }
 .modal-enter-from,.modal-leave-to { opacity:0; }
 
-/* Responsive */
 @media(max-width:768px) {
   .actividades-grid { grid-template-columns:1fr; }
   .quiz-opciones { grid-template-columns:1fr; }
