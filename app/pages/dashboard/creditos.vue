@@ -1,4 +1,3 @@
-<!-- app/pages/dashboard/creditos.vue -->
 <template>
   <div class="creditos-page">
 
@@ -127,7 +126,6 @@ import { useUsuarioStore } from '~/stores/usuario'
 import { onMounted } from 'vue'
 
 const usuario = useUsuarioStore()
-onMounted(() => usuario.marcarVisitada('/dashboard/creditos'))
 definePageMeta({ layout: 'dashboard' })
 
 /* ── Reemplaza los `foto` con rutas reales en /public/team/ ── */

@@ -28,7 +28,7 @@
           <p class="panel__nav-label">Secciones</p>
           <template v-for="item in menu" :key="item.ruta">
             <NuxtLink
-              v-if="usuario.estaDesbloqueada(item.ruta)"
+              v-if="item.sinBloqueo || usuario.estaDesbloqueada(item.ruta)"
               :to="item.ruta"
               class="panel__item"
               active-class="panel__item--activo"
@@ -114,7 +114,11 @@
 
           <div class="secciones-grid">
             <template v-for="s in secciones" :key="s.ruta">
-              <NuxtLink v-if="usuario.estaDesbloqueada(s.ruta)" :to="s.ruta" class="seccion-card">
+              <NuxtLink
+                v-if="s.sinBloqueo || usuario.estaDesbloqueada(s.ruta)"
+                :to="s.ruta"
+                class="seccion-card"
+              >
                 <div class="seccion-card__ilustracion" :style="{ background: s.gradiente }">
                   <component :is="s.ilustracion" />
                   <div v-if="usuario.visitadas.includes(s.ruta)" class="seccion-card__check">✓</div>
@@ -152,7 +156,6 @@
         </div>
       </main>
 
-      <!-- Footer -->
       <footer class="footer">
         <div class="footer__inner">
           <div class="footer__brand">
@@ -177,16 +180,19 @@
       <!-- Botón completado flotante -->
       <Transition name="fade-btn">
         <button
-          v-if="!esDashboardHome && !seccionCompletada"
+          v-if="!esDashboardHome && !seccionCompletada && normalizedPath !== '/dashboard/recursos' && normalizedPath !== '/dashboard/creditos'"
           class="btn-completado"
           @click="completarSeccion"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M20 6L9 17l-5-5"/>
           </svg>
-          Marcar como completado
+          {{ siguienteSeccion ? 'Completado · Ir a ' + nombreSiguiente : 'Marcar como completado' }}
         </button>
-        <div v-else-if="!esDashboardHome && seccionCompletada" class="btn-completado btn-completado--hecho">
+        <div
+          v-else-if="!esDashboardHome && seccionCompletada && normalizedPath !== '/dashboard/recursos' && normalizedPath !== '/dashboard/creditos'"
+          class="btn-completado btn-completado--hecho"
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M20 6L9 17l-5-5"/>
           </svg>
@@ -198,20 +204,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, h, computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUsuarioStore } from '~/stores/usuario'
 
 const usuario = useUsuarioStore()
 const route = useRoute()
+const router = useRouter()
 const menuAbierto = ref(false)
 const { visitadas } = storeToRefs(usuario)
 
-// Reemplaza los computeds existentes con estas versiones
 const normalizedPath = computed(() => route.path.replace(/\/$/, '') || '/')
-
 const esDashboardHome = computed(() => normalizedPath.value === '/dashboard')
 
 const nombresSeccion = {
@@ -224,26 +229,57 @@ const nombresSeccion = {
   '/dashboard/creditos':    'Créditos',
 }
 
+const ordenSecciones = [
+  '/dashboard/contenido',
+  '/dashboard/practica',
+  '/dashboard/actividades',
+  '/dashboard/evaluacion',
+  '/dashboard/recursos',
+  '/dashboard/creditos',
+]
+
 const seccionActual = computed(() => nombresSeccion[normalizedPath.value] ?? 'Dashboard')
 
 const progreso = computed(() => {
-  const rutas = Object.keys(nombresSeccion).filter(r => r !== '/dashboard')
-  const visitadasEnOrden = rutas.filter(r => visitadas.value.includes(r))
-  return Math.round((visitadasEnOrden.length / rutas.length) * 100)
+  const rutasConProgreso = [
+    '/dashboard/contenido',
+    '/dashboard/practica',
+    '/dashboard/actividades',
+    '/dashboard/evaluacion',
+  ]
+  const completadas = rutasConProgreso.filter(r => visitadas.value.includes(r))
+  return Math.round((completadas.length / rutasConProgreso.length) * 100)
 })
 
 const seccionCompletada = computed(() => visitadas.value.includes(normalizedPath.value))
 
+const siguienteSeccion = computed(() => {
+  const idx = ordenSecciones.indexOf(normalizedPath.value)
+  if (idx < 0) return null
+  return idx < ordenSecciones.length - 1 ? ordenSecciones[idx + 1] : '/dashboard'
+})
+
+const nombreSiguiente = computed(() => {
+  if (!siguienteSeccion.value) return ''
+  return nombresSeccion[siguienteSeccion.value] ?? 'Dashboard'
+})
+
 const completarSeccion = () => {
   usuario.marcarVisitada(normalizedPath.value)
+  const idx = ordenSecciones.indexOf(normalizedPath.value)
+  const siguiente = idx >= 0 && idx < ordenSecciones.length - 1
+    ? ordenSecciones[idx + 1]
+    : '/dashboard'
+  router.push(siguiente)
 }
+
 const menu = [
-  { label: 'Contenido',   ruta: '/dashboard/contenido',   emoji: '📐', desc: 'Fórmulas y propiedades',   bgLight: 'rgba(59,130,246,0.12)'  },
-  { label: 'Práctica',    ruta: '/dashboard/practica',    emoji: '✏️', desc: 'Canvas interactivo',        bgLight: 'rgba(8,145,178,0.12)'   },
-  { label: 'Actividades', ruta: '/dashboard/actividades', emoji: '🎮', desc: 'Juegos interactivos',       bgLight: 'rgba(139,92,246,0.12)'  },
-  { label: 'Evaluación',  ruta: '/dashboard/evaluacion',  emoji: '📝', desc: 'Pon a prueba tu saber',     bgLight: 'rgba(249,115,22,0.12)'  },
-  { label: 'Recursos',    ruta: '/dashboard/recursos',    emoji: '📚', desc: 'Material de apoyo',         bgLight: 'rgba(34,197,94,0.12)'   },
-  { label: 'Créditos',    ruta: '/dashboard/creditos',    emoji: '👥', desc: 'Equipo del proyecto',       bgLight: 'rgba(236,72,153,0.12)'  },
+  { label: 'Contenido',   ruta: '/dashboard/contenido',   emoji: '📐', desc: 'Fórmulas y propiedades',   bgLight: 'rgba(59,130,246,0.12)'                    },
+  { label: 'Práctica',    ruta: '/dashboard/practica',    emoji: '✏️', desc: 'Canvas interactivo',        bgLight: 'rgba(8,145,178,0.12)'                    },
+  { label: 'Actividades', ruta: '/dashboard/actividades', emoji: '🎮', desc: 'Juegos interactivos',       bgLight: 'rgba(139,92,246,0.12)'                   },
+  { label: 'Evaluación',  ruta: '/dashboard/evaluacion',  emoji: '📝', desc: 'Pon a prueba tu saber',     bgLight: 'rgba(249,115,22,0.12)'                   },
+  { label: 'Recursos',    ruta: '/dashboard/recursos',    emoji: '📚', desc: 'Material de apoyo',         bgLight: 'rgba(34,197,94,0.12)',  sinBloqueo: true  },
+  { label: 'Créditos',    ruta: '/dashboard/creditos',    emoji: '👥', desc: 'Equipo del proyecto',       bgLight: 'rgba(236,72,153,0.12)', sinBloqueo: true  },
 ]
 
 const IlustracionContenido = defineComponent({
@@ -312,12 +348,12 @@ const IlustracionCreditos = defineComponent({
 })
 
 const secciones = [
-  { nombre: 'Contenido',   ruta: '/dashboard/contenido',   tipo: 'Teoría',      desc: 'Aprende las fórmulas y propiedades de las principales figuras geométricas.',   color: '#3B82F6', bgBadge: 'rgba(59,130,246,0.12)',  gradiente: 'linear-gradient(135deg, #1D4ED8, #3B82F6)', ilustracion: IlustracionContenido   },
-  { nombre: 'Práctica',    ruta: '/dashboard/practica',    tipo: 'Interactivo', desc: 'Dibuja figuras en el plano cartesiano y calcula su área en tiempo real.',       color: '#0891b2', bgBadge: 'rgba(8,145,178,0.12)',   gradiente: 'linear-gradient(135deg, #0e7490, #0891b2)', ilustracion: IlustracionPractica    },
-  { nombre: 'Actividades', ruta: '/dashboard/actividades', tipo: 'Práctica',    desc: 'Pon a prueba tus conocimientos con juegos y actividades interactivas.',         color: '#8B5CF6', bgBadge: 'rgba(139,92,246,0.12)', gradiente: 'linear-gradient(135deg, #6D28D9, #8B5CF6)', ilustracion: IlustracionActividades },
-  { nombre: 'Evaluación',  ruta: '/dashboard/evaluacion',  tipo: 'Evaluación',  desc: 'Demuestra lo que aprendiste con una evaluación completa.',                      color: '#F97316', bgBadge: 'rgba(249,115,22,0.12)',  gradiente: 'linear-gradient(135deg, #C2410C, #F97316)', ilustracion: IlustracionEvaluacion  },
-  { nombre: 'Recursos',    ruta: '/dashboard/recursos',    tipo: 'Material',    desc: 'Encuentra videos, lecturas y material de apoyo para reforzar tu aprendizaje.',  color: '#16a34a', bgBadge: 'rgba(34,197,94,0.12)',   gradiente: 'linear-gradient(135deg, #15803D, #22C55E)', ilustracion: IlustracionRecursos    },
-  { nombre: 'Créditos',    ruta: '/dashboard/creditos',    tipo: 'Información', desc: 'Conoce al equipo que desarrolló esta OVA.',                                     color: '#EC4899', bgBadge: 'rgba(236,72,153,0.12)', gradiente: 'linear-gradient(135deg, #BE185D, #EC4899)', ilustracion: IlustracionCreditos    },
+  { nombre: 'Contenido',   ruta: '/dashboard/contenido',   tipo: 'Teoría',      desc: 'Aprende las fórmulas y propiedades de las principales figuras geométricas.',   color: '#3B82F6', bgBadge: 'rgba(59,130,246,0.12)',  gradiente: 'linear-gradient(135deg, #1D4ED8, #3B82F6)', ilustracion: IlustracionContenido                    },
+  { nombre: 'Práctica',    ruta: '/dashboard/practica',    tipo: 'Interactivo', desc: 'Dibuja figuras en el plano cartesiano y calcula su área en tiempo real.',       color: '#0891b2', bgBadge: 'rgba(8,145,178,0.12)',   gradiente: 'linear-gradient(135deg, #0e7490, #0891b2)', ilustracion: IlustracionPractica                     },
+  { nombre: 'Actividades', ruta: '/dashboard/actividades', tipo: 'Práctica',    desc: 'Pon a prueba tus conocimientos con juegos y actividades interactivas.',         color: '#8B5CF6', bgBadge: 'rgba(139,92,246,0.12)', gradiente: 'linear-gradient(135deg, #6D28D9, #8B5CF6)', ilustracion: IlustracionActividades                  },
+  { nombre: 'Evaluación',  ruta: '/dashboard/evaluacion',  tipo: 'Evaluación',  desc: 'Demuestra lo que aprendiste con una evaluación completa.',                      color: '#F97316', bgBadge: 'rgba(249,115,22,0.12)',  gradiente: 'linear-gradient(135deg, #C2410C, #F97316)', ilustracion: IlustracionEvaluacion                   },
+  { nombre: 'Recursos',    ruta: '/dashboard/recursos',    tipo: 'Material',    desc: 'Encuentra videos, lecturas y material de apoyo para reforzar tu aprendizaje.',  color: '#16a34a', bgBadge: 'rgba(34,197,94,0.12)',   gradiente: 'linear-gradient(135deg, #15803D, #22C55E)', ilustracion: IlustracionRecursos,  sinBloqueo: true  },
+  { nombre: 'Créditos',    ruta: '/dashboard/creditos',    tipo: 'Información', desc: 'Conoce al equipo que desarrolló esta OVA.',                                     color: '#EC4899', bgBadge: 'rgba(236,72,153,0.12)', gradiente: 'linear-gradient(135deg, #BE185D, #EC4899)', ilustracion: IlustracionCreditos,  sinBloqueo: true  },
 ]
 </script>
 
@@ -489,7 +525,7 @@ const secciones = [
 .seccion-card__desc   { font-size: 13px; color: #5a6e8a; margin: 0; line-height: 1.5; flex: 1; }
 .seccion-card__footer { font-size: 13px; font-weight: 600; margin-top: 8px; }
 
-/* ─── Footer ─────────────────────────────── */
+/* Footer */
 .footer {
   background: rgba(255,255,255,0.03);
   border-top: 0.5px solid rgba(255,255,255,0.07);
@@ -504,10 +540,9 @@ const secciones = [
 .footer__programa    { font-size: 11px; color: #2d4a6e; margin: 0; }
 .footer__anio        { font-size: 12px; color: #2d4a6e; margin: 0; }
 
-/* ─── Botón completado ───────────────────── */
+/* Botón completado */
 .btn-completado {
-  position: fixed;
-  bottom: 28px; right: 28px;
+  position: fixed; bottom: 28px; right: 28px;
   display: flex; align-items: center; gap: 8px;
   padding: 12px 20px; border-radius: 50px; border: none;
   background: #378ADD; color: #fff;

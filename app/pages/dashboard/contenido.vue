@@ -187,10 +187,6 @@
 </template>
 
 <script setup>
-import { useUsuarioStore } from '~/stores/usuario'
-import { onMounted } from 'vue'
-const usuario = useUsuarioStore()
-onMounted(() => usuario.marcarVisitada('/dashboard/contenido')) // cambia la ruta según la página
 definePageMeta({ layout: 'dashboard' })
 import { ref, defineComponent, h } from 'vue'
 

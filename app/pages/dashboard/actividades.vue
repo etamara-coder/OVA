@@ -247,10 +247,6 @@
 </template>
 
 <script setup>
-import { useUsuarioStore } from '~/stores/usuario'
-import { onMounted } from 'vue'
-const usuario = useUsuarioStore()
-onMounted(() => usuario.marcarVisitada('/dashboard/actividades'))
 definePageMeta({ layout: 'dashboard' })
 import { ref, computed, defineComponent, h, onUnmounted } from 'vue'
 

@@ -2,11 +2,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
-  
   ssr: false,
   nitro: {
-
-    preset: 'cloudflare-pages',
+    preset: 'static'
   },
   build: {
     transpile: ['vuetify'],
@@ -26,5 +24,11 @@ export default defineNuxtConfig({
       },
     },
   },
-  
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+      ]
+    }
+  }
 })
