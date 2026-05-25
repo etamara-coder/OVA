@@ -79,32 +79,33 @@
     </div>
 
     <!-- Institución -->
-    <div class="seccion">
-      <h2 class="seccion__titulo">🏛️ Institución</h2>
-      <div class="inst-card">
-        <div class="inst-card__logo">
-          <svg width="56" height="56" viewBox="0 0 80 80">
-            <polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="#378ADD" />
-            <polygon points="40,16 64,30 64,50 40,64 16,50 16,30" fill="#185FA5" />
-            <polygon points="40,27 54,35 54,45 40,53 26,45 26,35" fill="#0C447C" />
-          </svg>
-        </div>
-        <div>
-          <h3 class="inst-card__nombre">Universidad de Córdoba</h3>
-          <p class="inst-card__programa">Facultad de Ciencias Básicas e Ingeniería · Programa de Informática</p>
-          <p class="inst-card__texto">
-            GeoÁrea es un Objeto Virtual de Aprendizaje (OVA) desarrollado como
-            proyecto académico para apoyar la enseñanza del cálculo de áreas de
-            figuras geométricas en educación básica secundaria.
-          </p>
-          <div class="inst-card__meta">
-            <span class="tag tag--blue">📅 2026</span>
-            <span class="tag tag--green">📐 Geometría</span>
-            <span class="tag tag--purple">💻 Informática</span>
-          </div>
-        </div>
+<!-- Institución -->
+<div class="seccion">
+  <h2 class="seccion__titulo">🏛️ Institución</h2>
+  <div class="inst-card">
+    <div class="inst-card__logo">
+      <img
+        src="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1776218367/unicordoba_logo.png"
+        alt="Universidad de Córdoba"
+        class="inst-card__logo-img"
+      />
+    </div>
+    <div>
+      <h3 class="inst-card__nombre">Universidad de Córdoba</h3>
+      <p class="inst-card__programa">Facultad de Ciencias Básicas e Ingeniería · Programa de Informática</p>
+      <p class="inst-card__texto">
+        GeoÁrea es un Objeto Virtual de Aprendizaje (OVA) desarrollado como
+        proyecto académico para apoyar la enseñanza del cálculo de áreas de
+        figuras geométricas en educación básica secundaria.
+      </p>
+      <div class="inst-card__meta">
+        <span class="tag tag--blue">📅 2026</span>
+        <span class="tag tag--green">📐 Geometría</span>
+        <span class="tag tag--purple">💻 Informática</span>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Tecnologías -->
     <div class="seccion">
@@ -130,8 +131,8 @@ definePageMeta({ layout: 'dashboard' })
 
 /* ── Reemplaza los `foto` con rutas reales en /public/team/ ── */
 const docente = {
-  nombre:   'Ana Stella Chica Espitia',          // ← editar
-  cargo:    'Docente de Informática · Universidad de Córdoba',
+  nombre:   'Ana Stella Chica Espitia',       
+  cargo:    'Docente de Matematicas · Maria Goretti',  
   foto:     '/team/docente.jpg',
   iniciales:'DO',
   desc:     'Docente asesor del proyecto GeoÁrea, responsable de orientar el proceso pedagógico y técnico del Objeto Virtual de Aprendizaje.',
@@ -243,7 +244,15 @@ function onImgError(event, iniciales) {
 .inst-card__programa { font-size:13px; color:#378ADD; font-weight:500; margin:0 0 10px; }
 .inst-card__texto    { font-size:13px; color:#475569; margin:0 0 12px; line-height:1.6; }
 .inst-card__meta     { display:flex; flex-wrap:wrap; gap:8px; }
-
+.inst-card__logo-img {
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+}
 /* Tecnologías */
 .tech-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; }
 .tech-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 12px; display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; transition:box-shadow 0.2s; }

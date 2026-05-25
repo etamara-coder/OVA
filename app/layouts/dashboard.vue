@@ -158,12 +158,12 @@
 
       <footer class="footer">
         <div class="footer__inner">
-          <div class="footer__brand">
-            <svg width="28" height="28" viewBox="0 0 80 80">
-              <polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="#378ADD" />
-              <polygon points="40,16 64,30 64,50 40,64 16,50 16,30" fill="#185FA5" />
-              <polygon points="40,27 54,35 54,45 40,53 26,45 26,35" fill="#0C447C" />
-            </svg>
+      <div class="footer__brand">
+        <img
+          src="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1776218367/unicordoba_logo.png"
+          alt="Universidad de Córdoba"
+          class="footer__logo-img"
+        />  
             <div>
               <p class="footer__nombre">GeoÁrea</p>
               <p class="footer__sub">OVA · Figuras Geométricas</p>
@@ -526,6 +526,7 @@ const secciones = [
 .seccion-card__footer { font-size: 13px; font-weight: 600; margin-top: 8px; }
 
 /* Footer */
+
 .footer {
   background: rgba(255,255,255,0.03);
   border-top: 0.5px solid rgba(255,255,255,0.07);
@@ -540,6 +541,14 @@ const secciones = [
 .footer__programa    { font-size: 11px; color: #2d4a6e; margin: 0; }
 .footer__anio        { font-size: 12px; color: #2d4a6e; margin: 0; }
 
+.footer__logo-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  background: white;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
 /* Botón completado */
 .btn-completado {
   position: fixed; bottom: 28px; right: 28px;
